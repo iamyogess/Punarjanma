@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import Image from "next/image";
 
 const navigationItems = [
   { name: "Home", href: "/" },
@@ -23,7 +24,14 @@ export default function Navigation() {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="text-2xl font-bold text-primary">
-              Logo
+              <Image
+                src={"/images/logo.jpeg"}
+                alt="logo"
+                width={400}
+                height={400}
+                loading="lazy"
+                className="h-[60px] w-[60px] rounded-xl"
+              />
             </Link>
           </div>
 
