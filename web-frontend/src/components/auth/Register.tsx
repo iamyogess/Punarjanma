@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useSignup } from "@/hooks/useMutation/useUserMutations";
+import Link from "next/link";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -23,10 +24,10 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className=" flex items-center justify-center">
       <form
         onSubmit={handleSubmit}
-        className="w-[350px] space-y-4 border p-6 rounded shadow-md bg-white primary secondary"
+        className="w-[400px] space-y-4 h-full  p-6 rounded  bg-white primary "
       >
         <h2 className="text-2xl font-semibold text-center">Sign Up</h2>
 
@@ -65,6 +66,10 @@ export default function RegisterPage() {
         <Button type="submit" className="w-full" disabled={signup.isPending}>
           {signup.isPending ? "Signing Up..." : "Sign Up"}
         </Button>
+        <div className="inline-flex gap-2">
+          <p>Already have account?</p>
+          <Link className="text-blue-600 underline" href="/login">Login</Link>
+        </div>
       </form>
     </div>
   );
