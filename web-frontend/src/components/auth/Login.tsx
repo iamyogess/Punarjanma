@@ -63,7 +63,11 @@ export default function LoginPage() {
           )}
         </div>
 
-        <Button type="submit" className="w-full" disabled={login.isPending}>
+        <Button
+          type="submit"
+          className="w-full bg-primary"
+          disabled={login.isPending}
+        >
           {login.isPending ? "Logging in..." : "Login"}
         </Button>
       </form>
