@@ -18,3 +18,18 @@ export const useSignup = () => {
     },
   });
 };
+
+// login
+interface LoginInput {
+  email: string;
+  password: string;
+}
+
+export const useLogin = () => {
+  return useMutation({
+    mutationFn: async (data: LoginInput) => {
+      const res = await axios.post("/api/login", data);
+      return res.data;
+    },
+  });
+};

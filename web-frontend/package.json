@@ -9,8 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-avatar": "^1.1.10",
+=======
+    "@hookform/resolvers": "^5.1.1",
+>>>>>>> dff62388a5a4e64f8c55cbd1d6f4e5f9b7b35dde
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
     "@radix-ui/react-label": "^2.1.7",
@@ -22,12 +26,15 @@
     "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "input-otp": "^1.4.2",
     "lucide-react": "^0.525.0",
     "next": "15.4.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-hook-form": "^7.61.1",
     "react-hot-toast": "^2.5.2",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.0.10"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

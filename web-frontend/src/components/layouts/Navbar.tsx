@@ -16,7 +16,6 @@ const navigationItems = [
 export default function Navigation() {
   const [isOpen, setIsOpen] = React.useState(false);
   const [isAuthenticated, setIsAuthenticcated] = React.useState(false);
-
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">

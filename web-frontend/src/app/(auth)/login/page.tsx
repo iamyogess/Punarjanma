@@ -1,9 +1,12 @@
+import LoginPage from "@/components/auth/Login";
 import Layout from "@/components/layouts/Layout";
 export default function Home() {
   return (
     <>
       <Layout>
-        <div>Login</div>
+        <div>
+          <LoginPage />
+        </div>
       </Layout>
     </>
   );
