@@ -5,7 +5,7 @@ import { colors } from '../theme/colors';
 const SplashScreen = ({ navigation }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigation.replace('Home'); // ⬅ Navigates directly to Home
+      navigation.replace('Login'); // ⬅ Navigates directly to Home
     }, 2000);
 
     return () => clearTimeout(timer);
