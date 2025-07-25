@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useSignup } from "@/hooks/useMutation/useUserMutations";
 import { toast } from "react-hot-toast";
 
-export default function SignupPage() {
+export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
