@@ -1,7 +1,7 @@
+import React from 'react'
 
-
-export default function Home() {
+export default function AaminDashboard (){
   return (
-   <div>Home</div>
-  );
+    <div className=" bg-red-200">AaminDashboard</div>
+  )
 }

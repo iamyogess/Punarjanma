@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/app/globals.css";
 import Layout from "@/components/layouts/Layout";
-// import ReactQueryProvider from "@/providers/ReactQueryProvider";
+
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import AdminNav from "./components/AdminNav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,10 +29,15 @@ export default function AdminLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased `}
       >
-        <Layout>{children}</Layout>
+        <SidebarProvider>
+          <AppSidebar />
+          <main className="flex flex-col  w-full">
+            <AdminNav />
+            {children}
+          </main>
+        </SidebarProvider>
       </body>
     </html>
   );
