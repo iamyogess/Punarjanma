@@ -4,24 +4,28 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useSignup } from "@/hooks/useMutation/useUserMutations";
+
 import Link from "next/link";
-import WidthWrapper from "../WidthWrapper";
+
+import { useSignUpMutation } from "@/hooks/useMutation/useUserMutations";
 
 export default function RegisterPage() {
-  const [formData, setFormData] = useState({
-    name: "",
+  const [formData, setFormData] = useState<RegisterPayloadType>({
+    fullName: "",
     email: "",
     password: "",
+    role: "user",
   });
 
-  const signup = useSignup();
+  const { mutate, isPending } = useSignUpMutation();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    mutate(formData);
+    console.log(formData);
   };
 
   return (
@@ -35,12 +39,12 @@ export default function RegisterPage() {
           Your new beginning starts with Punarjanma.
         </p>
         <div className="space-y-2 rounded-full">
-          <Label htmlFor="name">Name</Label>
+          <Label htmlFor="fullName">Full Name</Label>
           <Input
-            id="name"
-            name="name"
-            onChange={handleChange }
-            value={formData.name}
+            id="fullName"
+            name="fullName"
+            onChange={handleChange}
+            value={formData.fullName}
           />
         </div>
 
@@ -66,8 +70,8 @@ export default function RegisterPage() {
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={signup.isPending}>
-          {signup.isPending ? "Signing Up..." : "Sign Up"}
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending ? "Signing Up..." : "Sign Up"}
         </Button>
         <div className="inline-flex gap-2">
           <p>Already have account?</p>

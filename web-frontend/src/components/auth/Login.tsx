@@ -1,14 +1,12 @@
 "use client";
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useLogin } from "@/hooks/useMutation/useUserMutations";
-import toast from "react-hot-toast";
 import Link from "next/link";
+import { useLoginMutation } from "@/hooks/useMutation/useUserMutations";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email"),
@@ -18,7 +16,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const login = useLogin();
+  const { mutate, isPending } = useLoginMutation();
 
   const {
     register,
@@ -29,15 +27,7 @@ export default function LoginPage() {
   });
 
   const onSubmit = (data: LoginFormData) => {
-    login.mutate(data, {
-      onSuccess: () => {
-        toast.success("Login successful!");
-        // Optional: redirect or store token
-      },
-      onError: () => {
-        toast.error("Invalid email or password");
-      },
-    });
+    mutate(data);
   };
 
   return (
@@ -69,9 +59,9 @@ export default function LoginPage() {
         <Button
           type="submit"
           className="w-full bg-primary"
-          disabled={login.isPending}
+          disabled={isPending}
         >
-          {login.isPending ? "Logging in..." : "Login"}
+          {isPending ? "Logging in..." : "Login"}
         </Button>
         <div className="inline-flex gap-2">
           <p>Don't Have an account?</p>
