@@ -12,18 +12,10 @@ import { z } from "zod";
 import { toast } from "react-hot-toast";
 import { useMutation } from "@tanstack/react-query";
 
-// ✅ Zod schema
+// Zod schema
 const otpSchema = z.string().length(6, "OTP must be 6 digits");
 
-// ✅ Mock API call
-async function verifyOTP(otp: string): Promise<{ success: boolean }> {
-  await new Promise((resolve) => setTimeout(resolve, 1000)); // simulate delay
-  if (otp === "123456") {
-    return { success: true };
-  } else {
-    throw new Error("Invalid OTP");
-  }
-}
+// Mock API call
 
 export function InputOTPDemo() {
   const [otp, setOtp] = useState("");
@@ -39,7 +31,7 @@ export function InputOTPDemo() {
 
   // Mutation for OTP verification
   const { mutate: submitOTP, isPending } = useMutation({
-    mutationFn: verifyOTP,
+    // mutationFn: verifyOTP,
     onSuccess: () => {
       toast.success("OTP verified successfully!");
     },

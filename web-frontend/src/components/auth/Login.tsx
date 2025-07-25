@@ -4,9 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLogin } from "@/hooks/useMutation/useUserMutations";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email"),
@@ -39,14 +41,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className=" flex justify-center ">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-[350px] space-y-4 border p-6 rounded shadow-md bg-white"
+        className=" space-y-4 p-6  bg-white w-[400px]"
       >
-        <h2 className="text-2xl font-semibold text-center">Login</h2>
-
-        <div className="space-y-1">
+        <h2 className="text-2xl font-semibold text-center">Welcome, Back</h2>
+        <span className="flex justify-center text-sm ">
+          Enter your valid credentials to continue.
+        </span>
+        <div className="space-y-1 ">
           <Label htmlFor="email">Email</Label>
           <Input id="email" type="email" {...register("email")} />
           {errors.email && (
@@ -69,6 +73,12 @@ export default function LoginPage() {
         >
           {login.isPending ? "Logging in..." : "Login"}
         </Button>
+        <div className="inline-flex gap-2">
+          <p>Don't Have an account?</p>
+          <Link className="text-blue-600 underline" href="/register">
+            signup
+          </Link>
+        </div>
       </form>
     </div>
   );

@@ -11,9 +11,7 @@ export const useSignup = () => {
   return useMutation({
     mutationFn: async (data: SignupInput) => {
       const res = await axios.post("/api/signup", data);
-
       console.log("signup res: ", res);
-
       return res.data;
     },
   });
