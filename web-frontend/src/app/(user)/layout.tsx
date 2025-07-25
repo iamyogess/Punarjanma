@@ -28,7 +28,7 @@ export default function UserLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en"  className="hydrated">
       <body className={`${poppins.variable} ${geistSans.variable}`}>
         <Layout>{children}</Layout>
       </body>

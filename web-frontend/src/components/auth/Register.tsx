@@ -4,39 +4,47 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useSignup } from "@/hooks/useMutation/useUserMutations";
+
+import Link from "next/link";
+
+import { useSignUpMutation } from "@/hooks/useMutation/useUserMutations";
 
 export default function RegisterPage() {
-  const [formData, setFormData] = useState({
-    name: "",
+  const [formData, setFormData] = useState<RegisterPayloadType>({
+    fullName: "",
     email: "",
     password: "",
+    role: "user",
   });
 
-  const signup = useSignup();
+  const { mutate, isPending } = useSignUpMutation();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    mutate(formData);
+    console.log(formData);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className=" flex items-center justify-center">
       <form
         onSubmit={handleSubmit}
-        className="w-[350px] space-y-4 border p-6 rounded shadow-md bg-white primary secondary"
+        className="w-[400px] space-y-4 h-full  rounded  bg-white primary "
       >
         <h2 className="text-2xl font-semibold text-center">Sign Up</h2>
-
-        <div className="space-y-2">
-          <Label htmlFor="name">Name</Label>
+        <p className="text-base font-medium text-gray-900 flex justify-center ">
+          Your new beginning starts with Punarjanma.
+        </p>
+        <div className="space-y-2 rounded-full">
+          <Label htmlFor="fullName">Full Name</Label>
           <Input
-            id="name"
-            name="name"
+            id="fullName"
+            name="fullName"
             onChange={handleChange}
-            value={formData.name}
+            value={formData.fullName}
           />
         </div>
 
@@ -62,9 +70,15 @@ export default function RegisterPage() {
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={signup.isPending}>
-          {signup.isPending ? "Signing Up..." : "Sign Up"}
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending ? "Signing Up..." : "Sign Up"}
         </Button>
+        <div className="inline-flex gap-2">
+          <p>Already have account?</p>
+          <Link className="text-blue-600 underline" href="/login">
+            Login
+          </Link>
+        </div>
       </form>
     </div>
   );

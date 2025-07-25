@@ -1,5 +1,5 @@
 import Layout from "@/components/layouts/Layout";
-import { InputOTPDemo } from "@/components/otp/InputOtp";
+import { InputOTPDemo } from "@/components/auth/InputOtp";
 import React from "react";
 
 function Otp() {

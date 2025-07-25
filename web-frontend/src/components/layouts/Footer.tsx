@@ -1,6 +1,7 @@
-"use client"
+"use client";
 import Link from "next/link";
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import Image from "next/image";
 
 const footerLinks = {
   company: [
@@ -44,11 +45,20 @@ export default function Footer() {
           {/* Logo and Description */}
           <div className="lg:col-span-2">
             <Link href="/" className="text-2xl font-bold text-primary">
-              Logo
+              <Image
+                src={"/images/logo.jpeg"}
+                alt="logo"
+                width={400}
+                height={400}
+                loading="lazy"
+                className="h-[60px] w-[60px] rounded-xl"
+              />
             </Link>
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">
-              Building amazing experiences with modern web technologies. Join
-              thousands of developers who trust our platform.
+              Empowering individuals to reinvent themselves through
+              high-quality, practical, and accessible learning. Whether you're
+              starting fresh or upgrading your skills, Punarjanma is your
+              partner in growth.
             </p>
             <div className="flex space-x-4 mt-6">
               {socialLinks.map((item) => {

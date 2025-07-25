@@ -28,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <ReactQueryProvider>
-      <html lang="en" suppressHydrationWarning>
+      <html lang="en" className="hydrated">
         <body className={`${poppins.variable} ${geistSans.variable}`}>
           <AuthProvider>{children}</AuthProvider>
         </body>
