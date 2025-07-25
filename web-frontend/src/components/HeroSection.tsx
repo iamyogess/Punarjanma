@@ -85,7 +85,6 @@
 
 // export default HeroSection;
 
-
 "use client";
 import { Button } from "./ui/button";
 import { ArrowRight, GraduationCap } from "lucide-react";
@@ -93,10 +92,11 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import WidthWrapper from "./WidthWrapper";
+import PricingCards from "./pricingCard/pricing-card";
 
 const HeroSection = () => {
   return (
-    <section className="md:h-[85vh] py-12 md:py-20 overflow-hidden">
+    <section className="md:h-[85vh] py-12 md:py-20 overflow-y-scroll">
       <WidthWrapper>
         <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
           {/* Left content */}
@@ -115,7 +115,8 @@ const HeroSection = () => {
               </h1>
               <p className="text-base md:text-xl text-muted-foreground mt-4 max-w-md">
                 Unlock your potential with expert-led courses in tech, business,
-                and personal growth. Learn at your own pace. Build real-world skills.
+                and personal growth. Learn at your own pace. Build real-world
+                skills.
               </p>
             </motion.div>
 
@@ -160,6 +161,11 @@ const HeroSection = () => {
               />
             </div>
           </motion.div>
+        </div>
+
+        {/* price sections */}
+        <div className="mt-8">
+          <PricingCards />
         </div>
       </WidthWrapper>
     </section>
