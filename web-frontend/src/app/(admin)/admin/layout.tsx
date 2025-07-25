@@ -29,7 +29,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en"  className="hydrated">
       <body className={`${poppins.variable} ${geistSans.variable}`}>
         <SidebarProvider>
           <AppSidebar />

@@ -51,12 +51,14 @@ export default function Footer() {
                 width={400}
                 height={400}
                 loading="lazy"
-               
-                className="h-[60px] w-[60px] rounded-xl"/>
+                className="h-[60px] w-[60px] rounded-xl"
+              />
             </Link>
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">
-              Building amazing experiences with modern web technologies. Join
-              thousands of developers who trust our platform.
+              Empowering individuals to reinvent themselves through
+              high-quality, practical, and accessible learning. Whether you're
+              starting fresh or upgrading your skills, Punarjanma is your
+              partner in growth.
             </p>
             <div className="flex space-x-4 mt-6">
               {socialLinks.map((item) => {

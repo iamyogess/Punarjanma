@@ -3,6 +3,7 @@ import { Geist, Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
 import { Toaster } from "react-hot-toast";
+import { AuthProvider } from "@/contexts/auth-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,9 +28,9 @@ export default function RootLayout({
 }>) {
   return (
     <ReactQueryProvider>
-      <html lang="en" suppressHydrationWarning>
+      <html lang="en" className="hydrated">
         <body className={`${poppins.variable} ${geistSans.variable}`}>
-          {children}
+          <AuthProvider>{children}</AuthProvider>
         </body>
       </html>
       <Toaster position="top-center" />

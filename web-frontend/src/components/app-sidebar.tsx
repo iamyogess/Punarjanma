@@ -19,7 +19,7 @@
 //   )
 // }
 "use client"
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
+import { Book, Calendar, Home, Inbox, Layout, Search, Settings, Users } from "lucide-react"
 
 import {
   Sidebar,
@@ -35,19 +35,19 @@ import {
 // Menu items.
 const items = [
   {
-    title: "Home",
-    url: "/login",
-    icon: Home,
+    title: "Dashboard",
+    url: "/admin",
+    icon: Layout,
   },
   {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
+    title: "Courses",
+    url: "/admin/courses",
+    icon: Book,
   },
   {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
+    title: "Users",
+    url: "/admin/users",
+    icon: Users,
   },
   {
     title: "Search",
