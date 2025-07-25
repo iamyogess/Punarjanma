@@ -9,7 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@radix-ui/react-label": "^2.1.7",
+=======
+    "@radix-ui/react-dialog": "^1.1.14",
+>>>>>>> 26fda35fe3b9c525707eb4edcaa2d7c99b2977c3
     "@radix-ui/react-slot": "^1.2.3",
     "@tanstack/react-query": "^5.83.0",
     "@tanstack/react-router": "^1.129.8",

@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <>
       <Navigation />
-      <div className="min-h-[80dvh]">Home</div>
+      <div>Home</div>
       <Footer />
     </>
   );
