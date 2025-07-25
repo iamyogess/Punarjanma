@@ -5,9 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useSignup } from "@/hooks/useMutation/useUserMutations";
-import { toast } from "react-hot-toast";
 
-export default function SignupPage() {
+export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,13 +20,6 @@ export default function SignupPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    signup.mutate(formData, {
-      onSuccess: () => toast.success("Signup successful!"),
-      onError: (err: any) =>
-        toast.error(
-          err?.response?.data?.message ?? "Signup failed. Try again."
-        ),
-    });
   };
 
   return (
