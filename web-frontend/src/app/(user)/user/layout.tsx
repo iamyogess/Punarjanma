@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import "@/app/globals.css";
 
 import Layout from "@/components/layouts/Layout";
@@ -10,9 +10,11 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "600"],
 });
 
 export const metadata: Metadata = {
@@ -27,13 +29,9 @@ export default function UserLyout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
- 
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased `}
-      >
-     <Layout>{children}</Layout>
+      <body className={`${poppins.variable} ${geistSans.variable}`}>
+        <Layout>{children}</Layout>
       </body>
-    
     </html>
   );
 }
