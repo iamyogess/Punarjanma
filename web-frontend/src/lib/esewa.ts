@@ -1,122 +1,76 @@
-import { API_CONFIG, ENV } from "./config"
-import type { PaymentData } from "./config"
-
+import CryptoJS from "crypto-js"
 export class EsewaPayment {
-  static initiatePayment(paymentData: PaymentData) {
-    const { courseId, amount, productName } = paymentData
+  static initiatePayment({
+    courseId,
+    amount,
+    productId,
+    productName,
+  }: {
+    courseId: string
+    amount: number
+    productId: string
+    productName: string
+  }) {
+    if (typeof window === "undefined") return
 
-    // Create a unique product ID with timestamp
-    const pid = `course_${courseId}_${Date.now()}`
+    const transactionUuid = `course_${courseId}_${Date.now()}`
+    const MERCHANT_CODE = "EPAYTEST"
+    const SECRET_KEY = "8gBm/:&EnhH.1/q"
 
-    // eSewa payment parameters
+    // Generate signature
+    const message = `total_amount=${amount},transaction_uuid=${transactionUuid},product_code=${MERCHANT_CODE}`
+    const hash = CryptoJS.HmacSHA256(message, SECRET_KEY)
+    const signature = CryptoJS.enc.Base64.stringify(hash)
+
+    const successUrl = `${window.location.origin}/subscription/success`
+    const failureUrl = `${window.location.origin}/subscription/failure`
+
     const params = {
-      amt: amount.toString(),
-      txAmt: "0", // Tax amount
-      psc: "0", // Service charge
-      pdc: "0", // Delivery charge
-      tAmt: amount.toString(), // Total amount
-      pid: pid, // Unique product/order ID
-      scd: API_CONFIG.ESEWA_CONFIG.MERCHANT_ID, // Merchant code
-      su: API_CONFIG.ESEWA_CONFIG.SUCCESS_URL, // Success URL
-      fu: API_CONFIG.ESEWA_CONFIG.FAILURE_URL, // Failure URL
+      amount,
+      tax_amount: 0,
+      product_service_charge: 0,
+      product_delivery_charge: 0,
+      total_amount: amount,
+      transaction_uuid: transactionUuid,
+      product_code: MERCHANT_CODE,
+      success_url: successUrl,
+      failure_url: failureUrl,
+      signed_field_names: "total_amount,transaction_uuid,product_code",
+      signature,
     }
 
-    console.log("Initiating eSewa payment with parameters:", params)
+    const form = document.createElement("form")
+    form.method = "POST"
+    form.action = "https://rc-epay.esewa.com.np/api/epay/main/v2/form"
 
-    // Validate required parameters
-    if (!params.amt || !params.pid || !params.su || !params.fu) {
-      console.error("Missing required eSewa parameters:", params)
-      alert("Payment configuration error. Please try again.")
-      return
-    }
+    Object.entries(params).forEach(([key, value]) => {
+      const input = document.createElement("input")
+      input.type = "hidden"
+      input.name = key
+      input.value = value.toString()
+      form.appendChild(input)
+    })
 
-    try {
-      // Create form dynamically
-      const form = document.createElement("form")
-      form.method = "POST"
-      form.action = API_CONFIG.ESEWA_CONFIG.PAYMENT_URL
-      form.target = "_self"
-
-      // Add all parameters as hidden inputs
-      Object.entries(params).forEach(([key, value]) => {
-        const input = document.createElement("input")
-        input.type = "hidden"
-        input.name = key
-        input.value = value.toString()
-        form.appendChild(input)
-      })
-
-      // Add form to document and submit
-      document.body.appendChild(form)
-      console.log("Submitting payment form to eSewa...")
-      form.submit()
-
-      // Clean up form after submission
-      setTimeout(() => {
-        if (document.body.contains(form)) {
-          document.body.removeChild(form)
-        }
-      }, 1000)
-    } catch (error) {
-      console.error("Error initiating eSewa payment:", error)
-      alert("Failed to initiate payment. Please try again.")
-    }
+    document.body.appendChild(form)
+    form.submit()
   }
 
   static async verifyPayment(oid: string, amt: string, refId: string): Promise<boolean> {
     try {
-      console.log("Verifying payment:", { oid, amt, refId })
-
-      const response = await fetch(`${API_CONFIG.BASE_URL}/payments/verify-esewa`, {
+      const response = await fetch("/api/payments/verify-esewa", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
         },
         credentials: "include",
         body: JSON.stringify({ oid, amt, refId }),
       })
 
-      if (!response.ok) {
-        console.error("HTTP error during verification:", response.status, response.statusText)
-        const errorText = await response.text()
-        console.error("Error response:", errorText)
-        return false
-      }
-
       const data = await response.json()
-      console.log("Payment verification response:", data)
-      return data.success || false
+      return data.success
     } catch (error) {
-      console.error("Payment verification failed:", error)
+      console.error("Payment verification error:", error)
       return false
-    }
-  }
-
-  // Helper method to parse URL parameters
-  static getUrlParams(): Record<string, string> {
-    if (typeof window === "undefined") return {}
-
-    const params = new URLSearchParams(window.location.search)
-    const result: Record<string, string> = {}
-    for (const [key, value] of params.entries()) {
-      result[key] = value
-    }
-    return result
-  }
-
-  // Helper method to get configuration info for debugging
-  static getConfig() {
-    return {
-      apiBaseUrl: API_CONFIG.BASE_URL,
-      esewaConfig: API_CONFIG.ESEWA_CONFIG,
-      environment: {
-        backendUri: ENV.BACKEND_URI,
-        frontendUri: ENV.Frontend_URI,
-        version: ENV.VERSION,
-        isDevelopment: ENV.IS_DEVELOPMENT,
-        isProduction: ENV.IS_PRODUCTION,
-      },
     }
   }
 }
