@@ -1,13 +1,17 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   ArrowLeft,
   ChevronDown,
@@ -21,167 +25,220 @@ import {
   Lock,
   Crown,
   CreditCard,
-} from "lucide-react"
-import Link from "next/link"
-import { useAuth } from "@/contexts/auth-context"
-import { API_CONFIG } from "@/lib/config"
-import { EsewaPayment } from "@/lib/esewa"
-import type { Course, SubTopic, Topic, UserProgress } from "@/types/course"
-import WidthWrapper from "@/components/WidthWrapper"
-import { DevPaymentSimulator } from "@/components/dev-payment-simulator"
+} from "lucide-react";
+import Link from "next/link";
+import { useAuth } from "@/contexts/auth-context";
+import { API_CONFIG } from "@/lib/config";
+import { EsewaPayment } from "@/lib/esewa";
+import type { Course, SubTopic, Topic, UserProgress } from "@/types/course";
+import WidthWrapper from "@/components/WidthWrapper";
+import { DevPaymentSimulator } from "@/components/dev-payment-simulator";
 
 export default function CourseDetailPage() {
-  const params = useParams()
-  const { user, isPremiumUser, isEnrolled, refreshUser } = useAuth()
-  const [course, setCourse] = useState<Course | null>(null)
-  const [userProgress, setUserProgress] = useState<UserProgress | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [enrolling, setEnrolling] = useState(false)
-  const [openTopics, setOpenTopics] = useState<Set<string>>(new Set())
-  const [selectedSubTopic, setSelectedSubTopic] = useState<SubTopic | null>(null)
-  const [currentTopicTitle, setCurrentTopicTitle] = useState<string>("")
+  const params = useParams();
+  const { user, isPremiumUser, isEnrolled, refreshUser } = useAuth();
+  const [course, setCourse] = useState<Course | null>(null);
+  const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [enrolling, setEnrolling] = useState(false);
+  const [openTopics, setOpenTopics] = useState<Set<string>>(new Set());
+  const [selectedSubTopic, setSelectedSubTopic] = useState<SubTopic | null>(
+    null
+  );
+  const [currentTopicTitle, setCurrentTopicTitle] = useState<string>("");
 
   useEffect(() => {
     if (params.id) {
-      fetchCourse()
+      fetchCourse();
       if (user) {
-        fetchUserProgress()
+        fetchUserProgress();
       }
     }
-  }, [params.id, user])
+  }, [params.id, user]);
 
   const fetchCourse = async () => {
     try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}/courses/${params.id}`)
-      const data = await response.json()
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}/courses/${params.id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+      const data = await response.json();
       if (data.success) {
-        setCourse(data.data)
+        setCourse(data.data);
         // Auto-open first topic and select first accessible sub-topic
         if (data.data.topics.length > 0) {
-          const firstTopic = data.data.topics[0]
-          setOpenTopics(new Set([firstTopic._id]))
+          const firstTopic = data.data.topics[0];
+          // Ensure openTopics is a Set and add the first topic's ID
+          setOpenTopics(new Set([firstTopic._id]));
           const firstAccessibleSubTopic = firstTopic.subTopics.find(
-            (st: SubTopic) => st.tier === "free" || isPremiumUser(data.data._id),
-          )
+            (st: SubTopic) =>
+              st.tier === "free" || (user && isPremiumUser(data.data._id))
+          );
           if (firstAccessibleSubTopic) {
-            setSelectedSubTopic(firstAccessibleSubTopic)
-            setCurrentTopicTitle(firstTopic.title)
+            setSelectedSubTopic(firstAccessibleSubTopic);
+            setCurrentTopicTitle(firstTopic.title);
           }
         }
       }
     } catch (error) {
-      console.error("Error fetching course:", error)
+      console.error("Error fetching course:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const fetchUserProgress = async () => {
     try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}/courses/${params.id}/progress`, { credentials: "include" })
-      const data = await response.json()
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}/courses/${params.id}/progress`,
+        { credentials: "include" }
+      );
+      const data = await response.json();
       if (data.success) {
-        setUserProgress(data.data)
+        setUserProgress(data.data);
+      } else {
+        // If progress not found or error, set to null/default
+        setUserProgress(null);
+        console.warn(
+          "Could not fetch user progress:",
+          data.message || "Unknown error"
+        );
       }
     } catch (error) {
-      console.error("Error fetching progress:", error)
+      console.error("Error fetching progress:", error);
+      setUserProgress(null); // Ensure progress is reset on error
     }
-  }
+  };
 
   const enrollInCourse = async () => {
-    if (!user) return
+    if (!user) {
+      alert("Please log in to enroll in courses.");
+      return;
+    }
 
-    setEnrolling(true)
+    setEnrolling(true);
     try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}/courses/${params.id}/enroll`, {
-        method: "POST",
-        credentials: "include",
-      })
-      const data = await response.json()
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}/courses/${params.id}/enroll`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+      const data = await response.json();
       if (data.success) {
-        await refreshUser()
-        await fetchUserProgress()
+        alert("Successfully enrolled in the course!");
+        await refreshUser(); // Refresh user data to update enrolledCourses
+        await fetchUserProgress(); // Fetch updated progress
+      } else {
+        alert(`Failed to enroll: ${data.message || "Unknown error"}`);
       }
     } catch (error) {
-      console.error("Error enrolling:", error)
+      console.error("Error enrolling:", error);
+      alert("An error occurred during enrollment. Please try again.");
     } finally {
-      setEnrolling(false)
+      setEnrolling(false);
     }
-  }
+  };
 
   const handlePremiumUpgrade = () => {
-    if (!course) return
+    if (!course) return;
 
     EsewaPayment.initiatePayment({
       courseId: course._id,
       amount: course.premiumPrice || 1000,
       productId: `premium_${course._id}`,
       productName: `Premium Access - ${course.title}`,
-    })
-  }
+    });
+  };
 
   const toggleTopic = (topicId: string) => {
-    const newOpenTopics = new Set(openTopics)
-    if (newOpenTopics.has(topicId)) {
-      newOpenTopics.delete(topicId)
-    } else {
-      newOpenTopics.add(topicId)
-    }
-    setOpenTopics(newOpenTopics)
-  }
+    // Use a functional update for setOpenTopics to ensure it uses the latest state
+    setOpenTopics((prevOpenTopics) => {
+      const newOpenTopics = new Set(prevOpenTopics);
+      if (newOpenTopics.has(topicId)) {
+        newOpenTopics.delete(topicId);
+      } else {
+        newOpenTopics.add(topicId);
+      }
+      return newOpenTopics;
+    });
+  };
 
   const handleSubTopicClick = (subTopic: SubTopic, topic: Topic) => {
     // Check if user can access this content
     if (subTopic.tier === "premium" && !isPremiumUser(course!._id)) {
-      return // Don't allow access to premium content
+      return; // Don't allow access to premium content
     }
 
-    setSelectedSubTopic(subTopic)
-    setCurrentTopicTitle(topic.title)
-  }
+    setSelectedSubTopic(subTopic);
+    setCurrentTopicTitle(topic.title);
+  };
 
   const markAsCompleted = async (subTopicId: string) => {
-    if (!user || !course) return
+    if (!user || !course) return;
 
     try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}/courses/${course._id}/progress`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ subTopicId, completed: true }),
-      })
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}/courses/${course._id}/progress`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ subTopicId, completed: true }),
+        }
+      );
 
       if (response.ok) {
-        await fetchUserProgress()
+        await fetchUserProgress();
       }
     } catch (error) {
-      console.error("Error updating progress:", error)
+      console.error("Error updating progress:", error);
     }
-  }
+  };
 
   const isSubTopicAccessible = (subTopic: SubTopic): boolean => {
-    return subTopic.tier === "free" || isPremiumUser(course!._id)
-  }
+    return subTopic.tier === "free" || (course && isPremiumUser(course._id));
+  };
 
   const isSubTopicCompleted = (subTopicId: string): boolean => {
-    return userProgress?.completedLessons.includes(subTopicId) || false
-  }
+    return userProgress?.completedLessons.includes(subTopicId) || false;
+  };
 
   const getProgressPercentage = (): number => {
-    if (!course || !userProgress) return 0
-    const totalLessons = course.topics.reduce((acc, topic) => acc + topic.subTopics.length, 0)
-    return totalLessons > 0 ? (userProgress.completedLessons.length / totalLessons) * 100 : 0
-  }
+    if (!course || !userProgress) return 0;
+    const totalLessons = course.topics.reduce(
+      (acc, topic) => acc + topic.subTopics.length,
+      0
+    );
+    return totalLessons > 0
+      ? (userProgress.completedLessons.length / totalLessons) * 100
+      : 0;
+  };
 
   const getPremiumLessonsCount = (): number => {
-    if (!course) return 0
-    return course.topics.reduce((acc, topic) => acc + topic.subTopics.filter((st) => st.tier === "premium").length, 0)
-  }
+    if (!course) return 0;
+    return course.topics.reduce(
+      (acc, topic) =>
+        acc + topic.subTopics.filter((st) => st.tier === "premium").length,
+      0
+    );
+  };
 
   const getFreeLessonsCount = (): number => {
-    if (!course) return 0
-    return course.topics.reduce((acc, topic) => acc + topic.subTopics.filter((st) => st.tier === "free").length, 0)
-  }
+    if (!course) return 0;
+    return course.topics.reduce(
+      (acc, topic) =>
+        acc + topic.subTopics.filter((st) => st.tier === "free").length,
+      0
+    );
+  };
 
   if (loading) {
     return (
@@ -191,7 +248,7 @@ export default function CourseDetailPage() {
           <p className="mt-4 text-gray-600">Loading course...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!course) {
@@ -200,22 +257,29 @@ export default function CourseDetailPage() {
         <Card className="text-center p-8">
           <CardContent>
             <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Course not found</h2>
-            <p className="text-gray-600 mb-4">The course you&apos;re looking for doesn&apos;t exist.</p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Course not found
+            </h2>
+            <p className="text-gray-600 mb-4">
+              The course you&apos;re looking for doesn&apos;t exist.
+            </p>
             <Link href="/courses">
               <Button>Back to Courses</Button>
             </Link>
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
-  const totalLessons = course.topics.reduce((acc, topic) => acc + topic.subTopics.length, 0)
-  const freeLessons = getFreeLessonsCount()
-  const premiumLessons = getPremiumLessonsCount()
-  const userHasPremium = isPremiumUser(course._id)
-  const userIsEnrolled = isEnrolled(course._id)
+  const totalLessons = course.topics.reduce(
+    (acc, topic) => acc + topic.subTopics.length,
+    0
+  );
+  const freeLessons = getFreeLessonsCount();
+  const premiumLessons = getPremiumLessonsCount();
+  const userHasPremium = isPremiumUser(course._id);
+  const userIsEnrolled = isEnrolled(course._id);
 
   return (
     <div className="min-h-screen bg-gray-50 py-10">
@@ -229,7 +293,9 @@ export default function CourseDetailPage() {
           </Link>
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold text-gray-900">{course.title}</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {course.title}
+              </h1>
               {course.tier === "premium" && (
                 <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
                   <Crown className="h-3 w-3 mr-1" />
@@ -269,8 +335,15 @@ export default function CourseDetailPage() {
                 <BookOpen className="h-4 w-4" />
                 <AlertDescription>
                   <div className="flex items-center justify-between">
-                    <span>Enroll in this course to track your progress and access content.</span>
-                    <Button onClick={enrollInCourse} disabled={enrolling} size="sm">
+                    <span>
+                      Enroll in this course to track your progress and access
+                      content.
+                    </span>
+                    <Button
+                      onClick={enrollInCourse}
+                      disabled={enrolling}
+                      size="sm"
+                    >
                       {enrolling ? "Enrolling..." : "Enroll Now"}
                     </Button>
                   </div>
@@ -285,9 +358,12 @@ export default function CourseDetailPage() {
                   <AlertDescription>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium text-yellow-800">Unlock Premium Content</p>
+                        <p className="font-medium text-yellow-800">
+                          Unlock Premium Content
+                        </p>
                         <p className="text-yellow-700">
-                          Get access to {premiumLessons} premium lessons for NPR {course.premiumPrice || 1000}
+                          Get access to {premiumLessons} premium lessons for NPR{" "}
+                          {course.premiumPrice || 1000}
                         </p>
                       </div>
                       <Button
@@ -320,11 +396,14 @@ export default function CourseDetailPage() {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Course Progress</span>
                 <span className="text-sm text-gray-600">
-                  {userProgress.completedLessons.length} of {totalLessons} lessons completed
+                  {userProgress.completedLessons.length} of {totalLessons}{" "}
+                  lessons completed
                 </span>
               </div>
               <Progress value={getProgressPercentage()} className="h-2" />
-              <p className="text-xs text-gray-500 mt-1">{getProgressPercentage().toFixed(0)}% complete</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {getProgressPercentage().toFixed(0)}% complete
+              </p>
             </CardContent>
           </Card>
         )}
@@ -347,7 +426,10 @@ export default function CourseDetailPage() {
                     onOpenChange={() => toggleTopic(topic._id)}
                   >
                     <CollapsibleTrigger asChild>
-                      <Button variant="ghost" className="w-full justify-between p-4 h-auto text-left hover:bg-gray-50">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-between p-4 h-auto text-left hover:bg-gray-50"
+                      >
                         <div className="flex items-center gap-3">
                           <span className="font-medium">{topic.title}</span>
                           <Badge variant="outline" className="text-xs">
@@ -363,19 +445,29 @@ export default function CourseDetailPage() {
                     </CollapsibleTrigger>
                     <CollapsibleContent className="pl-4 space-y-1">
                       {topic.subTopics.map((subTopic) => {
-                        const isAccessible = isSubTopicAccessible(subTopic)
-                        const isCompleted = isSubTopicCompleted(subTopic._id)
+                        const isAccessible = isSubTopicAccessible(subTopic);
+                        const isCompleted = isSubTopicCompleted(subTopic._id);
 
                         return (
-                          <div key={subTopic._id} className="flex items-center gap-2">
+                          <div
+                            key={subTopic._id}
+                            className="flex items-center gap-2"
+                          >
                             <Button
                               variant="ghost"
                               className={`flex-1 justify-start p-3 h-auto text-left ${
-                                isAccessible ? "hover:bg-blue-50 cursor-pointer" : "opacity-60 cursor-not-allowed"
+                                isAccessible
+                                  ? "hover:bg-blue-50 cursor-pointer"
+                                  : "opacity-60 cursor-not-allowed"
                               } ${
-                                selectedSubTopic?._id === subTopic._id ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
+                                selectedSubTopic?._id === subTopic._id
+                                  ? "bg-blue-50 border-l-4 border-l-blue-500"
+                                  : ""
                               }`}
-                              onClick={() => isAccessible && handleSubTopicClick(subTopic, topic)}
+                              onClick={() =>
+                                isAccessible &&
+                                handleSubTopicClick(subTopic, topic)
+                              }
                               disabled={!isAccessible}
                             >
                               <div className="flex items-center gap-3 flex-1">
@@ -386,10 +478,16 @@ export default function CourseDetailPage() {
                                 )}
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2">
-                                    <span className="block font-medium">{subTopic.title}</span>
-                                    {subTopic.tier === "premium" && <Crown className="h-3 w-3 text-yellow-500" />}
+                                    <span className="block font-medium">
+                                      {subTopic.title}
+                                    </span>
+                                    {subTopic.tier === "premium" && (
+                                      <Crown className="h-3 w-3 text-yellow-500" />
+                                    )}
                                   </div>
-                                  <span className="text-xs text-gray-500">{subTopic.duration || 15} min</span>
+                                  <span className="text-xs text-gray-500">
+                                    {subTopic.duration || 15} min
+                                  </span>
                                 </div>
                               </div>
                             </Button>
@@ -397,7 +495,9 @@ export default function CourseDetailPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => isAccessible && markAsCompleted(subTopic._id)}
+                                onClick={() =>
+                                  isAccessible && markAsCompleted(subTopic._id)
+                                }
                                 className="p-1"
                                 disabled={!isAccessible}
                               >
@@ -409,7 +509,7 @@ export default function CourseDetailPage() {
                               </Button>
                             )}
                           </div>
-                        )
+                        );
                       })}
                     </CollapsibleContent>
                   </Collapsible>
@@ -436,8 +536,12 @@ export default function CourseDetailPage() {
                         <div className="bg-white/90 rounded-full p-4 mb-4 mx-auto w-fit">
                           <Video className="h-12 w-12 text-blue-600" />
                         </div>
-                        <p className="text-gray-700 font-medium">Video Player</p>
-                        <p className="text-sm text-gray-500">Ready for video content</p>
+                        <p className="text-gray-700 font-medium">
+                          Video Player
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Ready for video content
+                        </p>
                       </div>
                     </div>
                     <div className="space-y-3">
@@ -453,12 +557,18 @@ export default function CourseDetailPage() {
                             </Badge>
                           )}
                         </div>
-                        <h3 className="font-semibold text-lg leading-tight">{selectedSubTopic.title}</h3>
+                        <h3 className="font-semibold text-lg leading-tight">
+                          {selectedSubTopic.title}
+                        </h3>
                       </div>
-                      <p className="text-gray-600 text-sm leading-relaxed">{selectedSubTopic.videoContent}</p>
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        {selectedSubTopic.videoContent}
+                      </p>
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <Clock className="h-4 w-4" />
-                        <span>Duration: {selectedSubTopic.duration || 15} minutes</span>
+                        <span>
+                          Duration: {selectedSubTopic.duration || 15} minutes
+                        </span>
                       </div>
                       <div className="space-y-2">
                         <Button className="w-full">
@@ -469,7 +579,9 @@ export default function CourseDetailPage() {
                           <Button
                             variant="outline"
                             className="w-full bg-transparent"
-                            onClick={() => markAsCompleted(selectedSubTopic._id)}
+                            onClick={() =>
+                              markAsCompleted(selectedSubTopic._id)
+                            }
                           >
                             {isSubTopicCompleted(selectedSubTopic._id) ? (
                               <>
@@ -492,8 +604,13 @@ export default function CourseDetailPage() {
                     <div className="bg-gray-100 rounded-full p-6 mx-auto w-fit mb-4">
                       <Video className="h-12 w-12 text-gray-400" />
                     </div>
-                    <p className="text-gray-600 font-medium mb-2">Select a lesson to start</p>
-                    <p className="text-sm text-gray-500">Choose any lesson from the course content to begin learning</p>
+                    <p className="text-gray-600 font-medium mb-2">
+                      Select a lesson to start
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Choose any lesson from the course content to begin
+                      learning
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -502,5 +619,5 @@ export default function CourseDetailPage() {
         </div>
       </WidthWrapper>
     </div>
-  )
+  );
 }

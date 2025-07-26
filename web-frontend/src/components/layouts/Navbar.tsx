@@ -1,119 +1,191 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import Link from "next/link";
-import { Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import WidthWrapper from "../WidthWrapper";
-import Image from "next/image";
-
-const navigationItems = [
-  { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
-  { name: "Services", href: "/services" },
-  { name: "Contact", href: "/contact" },
-];
+import * as React from "react"
+import Link from "next/link"
+import Image from "next/image"
+import { Menu, LogOut, BookOpen, BarChart3 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import WidthWrapper from "@/components/WidthWrapper"
+import { useAuth } from "@/contexts/auth-context"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function Navigation() {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [isAuthenticated, setIsAuthenticcated] = React.useState(false);
-  return (
-    <WidthWrapper>
-      <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 h-20 flex justify-center items-center">
-        <div className="container mx-auto">
-          <div className="flex justify-between items-center">
-            {/* Logo */}
-            <div className="flex-shrink-0">
-              <Link href="/" className="text-2xl font-bold text-primary">
-              <Image
-                src={"/images/logo.jpeg"}
-                alt="logo"
-                width={400}
-                height={400}
-                loading="lazy"
-               
-                className="h-[60px] w-[60px] rounded-xl"/>
-            </Link>
-            </div>
+  const [isOpen, setIsOpen] = React.useState(false)
+  const { user, logout } = useAuth()
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-4">
-                {navigationItems.map((item) => (
+  const handleLogout = async () => {
+    await logout()
+    setIsOpen(false) // Close mobile menu on logout
+  }
+
+  const desktopNavItems = [
+    { name: "Courses", href: "/courses", requiresAuth: false },
+    // Add other static pages if needed, e.g., { name: "About", href: "/about", requiresAuth: false },
+  ]
+
+  const mobileNavItems = [
+    { name: "Courses", href: "/courses" },
+    // Add other static pages for mobile if needed
+  ]
+
+  return (
+    <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <WidthWrapper className="h-20 flex items-center justify-between">
+        {/* Logo */}
+        <div className="flex-shrink-0">
+          <Link href="/" className="flex items-center gap-2">
+            <Image
+              src="/images/logo.jpeg"
+              alt="E-Learning Platform Logo"
+              width={40}
+              height={40}
+              className="rounded-lg"
+            />
+            <span className="text-xl font-bold text-gray-900 hidden sm:block">E-Learning</span>
+          </Link>
+        </div>
+
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center space-x-6">
+          {desktopNavItems.map((item) => (
+            <Link
+              key={item.name}
+              href={item.href}
+              className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
+            >
+              {item.name}
+            </Link>
+          ))}
+          {user && (
+            <Link href="/admin" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
+              Admin
+            </Link>
+          )}
+        </div>
+
+        {/* Desktop Auth Buttons / User Menu */}
+        <div className="hidden md:flex items-center gap-3">
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src="/placeholder-user.jpg" alt="User Avatar" />
+                    <AvatarFallback>
+                      {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.name || "User"}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/courses">
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    <span>My Courses</span>
+                  </Link>
+                </DropdownMenuItem>
+                {user && ( // Assuming admin access for any logged-in user for now
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin">
+                      <BarChart3 className="mr-2 h-4 w-4" />
+                      <span>Admin Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button variant="outline" asChild>
+                <Link href="/login">Login</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/register">Register</Link>
+              </Button>
+            </>
+          )}
+        </div>
+
+        {/* Mobile menu button */}
+        <div className="md:hidden">
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Open main menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+              <div className="flex flex-col space-y-4 mt-4">
+                {mobileNavItems.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="text-foreground hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                    className="text-foreground hover:text-primary px-3 py-2 rounded-md text-base font-medium transition-colors"
+                    onClick={() => setIsOpen(false)}
                   >
                     {item.name}
                   </Link>
                 ))}
-              </div>
-            </div>
-
-            {/* Desktop CTA Button */}
-            {isAuthenticated ? (
-              <div>Profile</div>
-            ) : (
-              <>
-                <div className="inline-flex gap-2">
-                  <div className="hidden md:block ">
-                    <Button asChild className="bg-primary text-white">
-                      <Link href="/register">Register</Link>
-                    </Button>
-                  </div>
-                  <div className="hidden md:block ">
-                    <Button variant="outline" asChild>
-                      <Link href="/login">Login</Link>
-                    </Button>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Mobile menu button */}
-            <div className="md:hidden">
-              <Sheet open={isOpen} onOpenChange={setIsOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Menu className="h-6 w-6" />
-                    <span className="sr-only">Open main menu</span>
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                  <div className="flex flex-col space-y-4 mt-4">
-                    {navigationItems.map((item) => (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        className="text-foreground hover:text-primary px-3 py-2 rounded-md text-base font-medium transition-colors"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        {item.name}
-                      </Link>
-                    ))}
+                {user ? (
+                  <>
+                    <Link
+                      href="/admin"
+                      className="text-foreground hover:text-primary px-3 py-2 rounded-md text-base font-medium transition-colors"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Admin Dashboard
+                    </Link>
+                    <div className="pt-4">
+                      <Button onClick={handleLogout} className="w-full">
+                        Log out
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
                     <div className="pt-4">
                       <Button asChild className="w-full">
                         <Link href="/login" onClick={() => setIsOpen(false)}>
-                          SignIn
+                          Login
                         </Link>
                       </Button>
                     </div>
-                    <div className="pt-4">
-                      <Button asChild className="w-full">
+                    <div className="pt-2">
+                      <Button asChild variant="outline" className="w-full bg-transparent">
                         <Link href="/register" onClick={() => setIsOpen(false)}>
-                          SignUp
+                          Register
                         </Link>
                       </Button>
                     </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
-          </div>
+                  </>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
-      </nav>
-    </WidthWrapper>
-  );
+      </WidthWrapper>
+    </nav>
+  )
 }

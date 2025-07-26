@@ -1,26 +1,40 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
-import { Plus, Trash2, Save, Clock, DollarSign, Crown, Info } from "lucide-react"
-import type { Course, Topic, SubTopic } from "@/types/course"
-import { API_CONFIG, COURSE_TIERS } from "@/lib/config"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import type React from "react";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import {
+  Plus,
+  Trash2,
+  Save,
+  Clock,
+  DollarSign,
+  Crown,
+  Info,
+} from "lucide-react";
+import type { Course, Topic, SubTopic } from "@/types/course";
+import { API_CONFIG, COURSE_TIERS } from "@/lib/config";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface CourseFormProps {
-  course?: Course | null
-  onClose: () => void
+  course?: Course | null;
+  onClose: () => void;
 }
 
 // Helper function to generate temporary IDs for React state management
-const generateTempId = () => `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+const generateTempId = () =>
+  `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
 export function CourseForm({ course, onClose }: CourseFormProps) {
   const [formData, setFormData] = useState({
@@ -33,10 +47,10 @@ export function CourseForm({ course, onClose }: CourseFormProps) {
     instructor: "Admin",
     tags: [] as string[],
     tier: COURSE_TIERS.FREE,
-  })
-  const [topics, setTopics] = useState<Topic[]>([])
-  const [loading, setLoading] = useState(false)
-  const [tagInput, setTagInput] = useState("")
+  });
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [tagInput, setTagInput] = useState("");
 
   useEffect(() => {
     if (course) {
@@ -50,59 +64,67 @@ export function CourseForm({ course, onClose }: CourseFormProps) {
         instructor: course.instructor || "Admin",
         tags: course.tags || [],
         tier: course.tier || COURSE_TIERS.FREE,
-      })
-      setTopics(course.topics || [])
+      });
+      setTopics(course.topics || []);
     }
-  }, [course])
+  }, [course]);
 
   const addTopic = () => {
     const newTopic: Topic = {
-      _id: generateTempId(), // Temporary ID for React state management
+      _id: generateTempId(),
       title: "",
       description: "",
       subTopics: [],
       order: topics.length,
-    }
-    setTopics([...topics, newTopic])
-  }
+    };
+    setTopics([...topics, newTopic]);
+  };
 
-  const updateTopic = (topicId: string, field: keyof Topic, value: string | number) => {
-    setTopics(topics.map((topic) => (topic._id === topicId ? { ...topic, [field]: value } : topic)))
-  }
+  const updateTopic = (
+    topicId: string,
+    field: keyof Topic,
+    value: string | number
+  ) => {
+    setTopics(
+      topics.map((topic) =>
+        topic._id === topicId ? { ...topic, [field]: value } : topic
+      )
+    );
+  };
 
   const deleteTopic = (topicId: string) => {
-    setTopics(topics.filter((topic) => topic._id !== topicId))
-  }
+    setTopics(topics.filter((topic) => topic._id !== topicId));
+  };
 
   const addSubTopic = (topicId: string) => {
     const newSubTopic: SubTopic = {
-      _id: generateTempId(), // Temporary ID for React state management
+      _id: generateTempId(),
       title: "",
       videoContent: "",
       videoUrl: "",
       duration: 15,
       order: 0,
       tier: COURSE_TIERS.FREE,
-    }
+    };
     setTopics(
       topics.map((topic) => {
         if (topic._id === topicId) {
           const updatedSubTopic = {
             ...newSubTopic,
             order: topic.subTopics.length,
-          }
-          return { ...topic, subTopics: [...topic.subTopics, updatedSubTopic] }
+          };
+          return { ...topic, subTopics: [...topic.subTopics, updatedSubTopic] };
         }
-        return topic
-      }),
-    )
-  }
+        return topic;
+      })
+    );
+  };
 
   const updateSubTopic = (
     topicId: string,
     subTopicId: string,
     field: keyof SubTopic,
-    value: string | number | boolean,
+    value: string | number | boolean
   ) => {
     setTopics(
       topics.map((topic) =>
@@ -110,13 +132,15 @@ export function CourseForm({ course, onClose }: CourseFormProps) {
           ? {
               ...topic,
               subTopics: topic.subTopics.map((subTopic) =>
-                subTopic._id === subTopicId ? { ...subTopic, [field]: value } : subTopic,
+                subTopic._id === subTopicId
+                  ? { ...subTopic, [field]: value }
+                  : subTopic
               ),
             }
-          : topic,
-      ),
-    )
-  }
+          : topic
+      )
+    );
+  };
 
   const deleteSubTopic = (topicId: string, subTopicId: string) => {
     setTopics(
@@ -124,50 +148,52 @@ export function CourseForm({ course, onClose }: CourseFormProps) {
         topic._id === topicId
           ? {
               ...topic,
-              subTopics: topic.subTopics.filter((subTopic) => subTopic._id !== subTopicId),
+              subTopics: topic.subTopics.filter(
+                (subTopic) => subTopic._id !== subTopicId
+              ),
             }
-          : topic,
-      ),
-    )
-  }
+          : topic
+      )
+    );
+  };
 
   const addTag = () => {
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
       setFormData((prev) => ({
         ...prev,
         tags: [...prev.tags, tagInput.trim()],
-      }))
-      setTagInput("")
+      }));
+      setTagInput("");
     }
-  }
+  };
 
   const removeTag = (tagToRemove: string) => {
     setFormData((prev) => ({
       ...prev,
       tags: prev.tags.filter((tag) => tag !== tagToRemove),
-    }))
-  }
+    }));
+  };
 
-// Replace your existing cleanDataForServer function with this:
-const cleanDataForServer = (data: any): any => {
-  if (Array.isArray(data)) {
-    return data.map(cleanDataForServer)
-  } else if (data && typeof data === 'object') {
-    const cleaned = {}
-    // Remove ALL _id fields when creating a new course
-    for (const [key, value] of Object.entries(data)) {
-      if (key !== '_id') {
-        cleaned[key] = cleanDataForServer(value)
+  // Replace your existing cleanDataForServer function with this:
+  const cleanDataForServer = (data: any): any => {
+    if (Array.isArray(data)) {
+      return data.map(cleanDataForServer);
+    } else if (data && typeof data === "object") {
+      const cleaned = {};
+      // Remove ALL _id fields when creating a new course
+      for (const [key, value] of Object.entries(data)) {
+        if (key !== "_id") {
+          cleaned[key] = cleanDataForServer(value);
+        }
       }
+      return cleaned;
     }
-    return cleaned
-  }
-  return data
-}
+    return data;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
     try {
       const courseData = {
         ...formData,
@@ -179,66 +205,78 @@ const cleanDataForServer = (data: any): any => {
             order: subIndex,
           })),
         })),
-      }
+      };
 
       // Clean the data to remove temporary IDs
-      const cleanedCourseData = cleanDataForServer(courseData)
+      const cleanedCourseData = cleanDataForServer(courseData);
 
-      const url = course ? `${API_CONFIG.BASE_URL}/courses/${course._id}` : `${API_CONFIG.BASE_URL}/courses`
-      const method = course ? "PUT" : "POST"
-      
-      console.log('Sending course data:', JSON.stringify(cleanedCourseData, null, 2)) // Debug log
-      
+      const url = course
+        ? `${API_CONFIG.BASE_URL}/courses/${course._id}`
+        : `${API_CONFIG.BASE_URL}/courses`;
+      const method = course ? "PUT" : "POST";
+
+      console.log(
+        "Sending course data:",
+        JSON.stringify(cleanedCourseData, null, 2)
+      ); // Debug log
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(cleanedCourseData),
-      })
-      
-      const data = await response.json()
+        credentials: "include",
+      });
+
+      const data = await response.json();
       if (data.success) {
-        onClose()
+        onClose();
       } else {
-        console.error('Server error:', data)
-        alert("Error saving course: " + (data.message || 'Unknown error'))
+        console.error("Server error:", data);
+        alert("Error saving course: " + (data.message || "Unknown error"));
       }
     } catch (error) {
-      console.error("Error saving course:", error)
-      alert("Error saving course. Please try again.")
+      console.error("Error saving course:", error);
+      alert("Error saving course. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const getTotalDuration = () => {
     return topics.reduce((total, topic) => {
       return (
         total +
         topic.subTopics.reduce((topicTotal, subTopic) => {
-          return topicTotal + (subTopic.duration || 15)
+          return topicTotal + (subTopic.duration || 15);
         }, 0)
-      )
-    }, 0)
-  }
+      );
+    }, 0);
+  };
 
   const getTotalLessons = () => {
-    return topics.reduce((total, topic) => total + topic.subTopics.length, 0)
-  }
+    return topics.reduce((total, topic) => total + topic.subTopics.length, 0);
+  };
 
   const getPremiumLessonsCount = () => {
     return topics.reduce(
-      (total, topic) => total + topic.subTopics.filter((st) => st.tier === COURSE_TIERS.PREMIUM).length,
-      0,
-    )
-  }
+      (total, topic) =>
+        total +
+        topic.subTopics.filter((st) => st.tier === COURSE_TIERS.PREMIUM).length,
+      0
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center gap-4 mb-8">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900">{course ? "Edit Course" : "Create New Course"}</h1>
-            <p className="text-gray-600">Build your course structure with topics and lessons</p>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {course ? "Edit Course" : "Create New Course"}
+            </h1>
+            <p className="text-gray-600">
+              Build your course structure with topics and lessons
+            </p>
           </div>
           <div className="flex items-center gap-4 text-sm text-gray-600">
             <div className="flex items-center gap-1">
@@ -326,7 +364,9 @@ const cleanDataForServer = (data: any): any => {
                     <option value="Programming">Programming</option>
                     <option value="Web Development">Web Development</option>
                     <option value="Data Science">Data Science</option>
-                    <option value="Mobile Development">Mobile Development</option>
+                    <option value="Mobile Development">
+                      Mobile Development
+                    </option>
                     <option value="DevOps">DevOps</option>
                     <option value="Design">Design</option>
                     <option value="Other">Other</option>
@@ -391,7 +431,8 @@ const cleanDataForServer = (data: any): any => {
                       </TooltipTrigger>
                       <TooltipContent>
                         <p className="max-w-xs">
-                          Configure premium pricing and content access. Individual lessons can be marked as premium.
+                          Configure premium pricing and content access.
+                          Individual lessons can be marked as premium.
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -412,8 +453,12 @@ const cleanDataForServer = (data: any): any => {
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value={COURSE_TIERS.FREE}>Free (with premium lessons)</option>
-                      <option value={COURSE_TIERS.PREMIUM}>Premium (entire course)</option>
+                      <option value={COURSE_TIERS.FREE}>
+                        Free (with premium lessons)
+                      </option>
+                      <option value={COURSE_TIERS.PREMIUM}>
+                        Premium (entire course)
+                      </option>
                     </select>
                   </div>
                   <div>
@@ -429,7 +474,8 @@ const cleanDataForServer = (data: any): any => {
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
-                            premiumPrice: Number.parseInt(e.target.value) || 1000,
+                            premiumPrice:
+                              Number.parseInt(e.target.value) || 1000,
                           }))
                         }
                         className="pl-10"
@@ -448,7 +494,9 @@ const cleanDataForServer = (data: any): any => {
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     placeholder="Add a tag..."
-                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
+                    onKeyPress={(e) =>
+                      e.key === "Enter" && (e.preventDefault(), addTag())
+                    }
                   />
                   <Button type="button" onClick={addTag} size="sm">
                     Add
@@ -456,9 +504,17 @@ const cleanDataForServer = (data: any): any => {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {formData.tags.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="flex items-center gap-1"
+                    >
                       {tag}
-                      <button type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-red-600">
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        className="ml-1 hover:text-red-600"
+                      >
                         ×
                       </button>
                     </Badge>
@@ -482,20 +538,31 @@ const cleanDataForServer = (data: any): any => {
                     <div className="flex-1 space-y-2">
                       <Input
                         value={topic.title}
-                        onChange={(e) => updateTopic(topic._id, "title", e.target.value)}
-                        placeholder={`Topic ${topicIndex + 1} title (e.g., Introduction)`}
+                        onChange={(e) =>
+                          updateTopic(topic._id, "title", e.target.value)
+                        }
+                        placeholder={`Topic ${
+                          topicIndex + 1
+                        } title (e.g., Introduction)`}
                         className="font-medium"
                         required
                       />
                       <Input
                         value={topic.description || ""}
-                        onChange={(e) => updateTopic(topic._id, "description", e.target.value)}
+                        onChange={(e) =>
+                          updateTopic(topic._id, "description", e.target.value)
+                        }
                         placeholder="Topic description (optional)"
                         className="text-sm"
                       />
                     </div>
                     <div className="flex gap-2 ml-4">
-                      <Button type="button" onClick={() => addSubTopic(topic._id)} size="sm" variant="outline">
+                      <Button
+                        type="button"
+                        onClick={() => addSubTopic(topic._id)}
+                        size="sm"
+                        variant="outline"
+                      >
                         <Plus className="h-4 w-4 mr-1" />
                         Lesson
                       </Button>
@@ -515,14 +582,23 @@ const cleanDataForServer = (data: any): any => {
                       <div
                         key={subTopic._id}
                         className={`flex gap-2 items-start p-4 rounded-lg border ${
-                          subTopic.tier === COURSE_TIERS.PREMIUM ? "bg-yellow-50 border-yellow-200" : "bg-gray-50"
+                          subTopic.tier === COURSE_TIERS.PREMIUM
+                            ? "bg-yellow-50 border-yellow-200"
+                            : "bg-gray-50"
                         }`}
                       >
                         <div className="flex-1 space-y-3">
                           <div className="grid gap-2 md:grid-cols-2">
                             <Input
                               value={subTopic.title}
-                              onChange={(e) => updateSubTopic(topic._id, subTopic._id, "title", e.target.value)}
+                              onChange={(e) =>
+                                updateSubTopic(
+                                  topic._id,
+                                  subTopic._id,
+                                  "title",
+                                  e.target.value
+                                )
+                              }
                               placeholder={`Lesson ${subTopicIndex + 1} title`}
                               required
                             />
@@ -537,7 +613,7 @@ const cleanDataForServer = (data: any): any => {
                                     topic._id,
                                     subTopic._id,
                                     "duration",
-                                    Number.parseInt(e.target.value) || 15,
+                                    Number.parseInt(e.target.value) || 15
                                   )
                                 }
                                 placeholder="Duration (min)"
@@ -548,14 +624,28 @@ const cleanDataForServer = (data: any): any => {
                           </div>
                           <Textarea
                             value={subTopic.videoContent}
-                            onChange={(e) => updateSubTopic(topic._id, subTopic._id, "videoContent", e.target.value)}
+                            onChange={(e) =>
+                              updateSubTopic(
+                                topic._id,
+                                subTopic._id,
+                                "videoContent",
+                                e.target.value
+                              )
+                            }
                             placeholder="Lesson description or content notes..."
                             rows={2}
                             required
                           />
                           <Input
                             value={subTopic.videoUrl || ""}
-                            onChange={(e) => updateSubTopic(topic._id, subTopic._id, "videoUrl", e.target.value)}
+                            onChange={(e) =>
+                              updateSubTopic(
+                                topic._id,
+                                subTopic._id,
+                                "videoUrl",
+                                e.target.value
+                              )
+                            }
                             placeholder="Video URL (optional)"
                             type="url"
                           />
@@ -569,13 +659,22 @@ const cleanDataForServer = (data: any): any => {
                                     topic._id,
                                     subTopic._id,
                                     "tier",
-                                    checked ? COURSE_TIERS.PREMIUM : COURSE_TIERS.FREE,
+                                    checked
+                                      ? COURSE_TIERS.PREMIUM
+                                      : COURSE_TIERS.FREE
                                   )
                                 }
                               />
-                              <Label htmlFor={`premium-${subTopic._id}`} className="flex items-center gap-1">
+                              <Label
+                                htmlFor={`premium-${subTopic._id}`}
+                                className="flex items-center gap-1"
+                              >
                                 <Crown
-                                  className={`h-4 w-4 ${subTopic.tier === COURSE_TIERS.PREMIUM ? "text-yellow-500" : "text-gray-400"}`}
+                                  className={`h-4 w-4 ${
+                                    subTopic.tier === COURSE_TIERS.PREMIUM
+                                      ? "text-yellow-500"
+                                      : "text-gray-400"
+                                  }`}
                                 />
                                 Premium Content
                               </Label>
@@ -584,7 +683,9 @@ const cleanDataForServer = (data: any): any => {
                         </div>
                         <Button
                           type="button"
-                          onClick={() => deleteSubTopic(topic._id, subTopic._id)}
+                          onClick={() =>
+                            deleteSubTopic(topic._id, subTopic._id)
+                          }
                           size="sm"
                           variant="outline"
                           className="text-red-600 hover:text-red-700 mt-2"
@@ -595,7 +696,8 @@ const cleanDataForServer = (data: any): any => {
                     ))}
                     {topic.subTopics.length === 0 && (
                       <p className="text-gray-500 text-sm italic text-center py-4">
-                        No lessons yet. Click Lesson to add your first lesson to this topic.
+                        No lessons yet. Click Lesson to add your first lesson to
+                        this topic.
                       </p>
                     )}
                   </CardContent>
@@ -603,7 +705,9 @@ const cleanDataForServer = (data: any): any => {
               ))}
               {topics.length === 0 && (
                 <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
-                  <p className="text-gray-500 mb-4">No topics yet. Start building your course structure.</p>
+                  <p className="text-gray-500 mb-4">
+                    No topics yet. Start building your course structure.
+                  </p>
                   <Button type="button" onClick={addTopic} variant="outline">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Your First Topic
@@ -626,12 +730,17 @@ const cleanDataForServer = (data: any): any => {
                 </>
               )}
             </Button>
-            <Button type="button" variant="outline" onClick={onClose} className="px-8 bg-transparent">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="px-8 bg-transparent"
+            >
               Cancel
             </Button>
           </div>
         </form>
       </div>
     </div>
-  )
+  );
 }

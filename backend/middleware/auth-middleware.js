@@ -12,7 +12,7 @@ export const authenticateUser = (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
-    req.user = decoded
+    req.user = { id: decoded.id, role: decoded.role }
     next()
   } catch (error) {
     return res.status(401).json({
@@ -28,12 +28,26 @@ export const optionalAuth = (req, res, next) => {
 
     if (token) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET)
-      req.user = decoded
+      req.user = { id: decoded.id, role: decoded.role }
     }
 
     next()
   } catch (error) {
-    // Continue without authentication
+    next()
+  }
+}
+
+export const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !req.user.role) {
+      return res.status(403).json({ success: false, message: "Access denied. No role found." })
+    }
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: `Access denied. Your role (${req.user.role}) is not authorized to access this resource.`,
+      })
+    }
     next()
   }
 }

@@ -1,13 +1,10 @@
-import React, { ReactNode } from "react";
-
-const WidthWrapper = ({ children }: { children: ReactNode }) => {
-  return (
-    <div className="w-full">
-      <div className="w-full container mx-auto px-4 md:px-6 lg:px-0">
-        {children}
-      </div>
-    </div>
-  );
-};
-
-export default WidthWrapper;
+import type React from "react"
+export default function WidthWrapper({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
+  return <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${className || ""}`}>{children}</div>
+}

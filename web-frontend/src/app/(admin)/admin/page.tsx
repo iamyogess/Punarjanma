@@ -1,77 +1,109 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Plus, BookOpen, Edit, Trash2, BarChart3, Eye, Crown } from "lucide-react"
-import Link from "next/link"
-import type { Course } from "@/types/course"
-import { CourseForm } from "./components/course-form"
-import { AdminStats } from "./components/admin-stats"
-import { API_CONFIG } from "@/lib/config"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Plus,
+  BookOpen,
+  Edit,
+  Trash2,
+  BarChart3,
+  Eye,
+  Crown,
+} from "lucide-react";
+import Link from "next/link";
+import type { Course } from "@/types/course";
+import { CourseForm } from "./components/course-form";
+import { AdminStats } from "./components/admin-stats";
+import { API_CONFIG } from "@/lib/config";
 
 export default function AdminPage() {
-  const [courses, setCourses] = useState<Course[]>([])
-  const [showForm, setShowForm] = useState(false)
-  const [editingCourse, setEditingCourse] = useState<Course | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [showStats, setShowStats] = useState(false)
-  const [filter, setFilter] = useState("all")
-  const [searchTerm, setSearchTerm] = useState("")
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showStats, setShowStats] = useState(false);
+  const [filter, setFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    fetchCourses()
-  }, [filter, searchTerm])
+    fetchCourses();
+  }, [filter, searchTerm]);
 
   const fetchCourses = async () => {
     try {
-      setLoading(true)
-      const queryParams = new URLSearchParams()
-      if (filter !== "all") queryParams.append("category", filter)
-      if (searchTerm) queryParams.append("search", searchTerm)
-      const response = await fetch(`${API_CONFIG.BASE_URL}/courses?${queryParams}`)
-      const data = await response.json()
+      setLoading(true);
+      const queryParams = new URLSearchParams();
+      if (filter !== "all") queryParams.append("category", filter);
+      if (searchTerm) queryParams.append("search", searchTerm);
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}/courses?${queryParams}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+      const data = await response.json();
       if (data.success) {
-        setCourses(data.data)
+        setCourses(data.data);
       } else {
-        console.error("Error fetching courses:", data.message)
+        console.error("Error fetching courses:", data.message);
       }
     } catch (error) {
-      console.error("Error fetching courses:", error)
+      console.error("Error fetching courses:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDeleteCourse = async (courseId: string) => {
-    if (!confirm("Are you sure you want to delete this course? This action cannot be undone.")) return
+    if (
+      !confirm(
+        "Are you sure you want to delete this course? This action cannot be undone."
+      )
+    )
+      return;
     try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}/courses/${courseId}`, {
-        method: "DELETE",
-      })
-      const data = await response.json()
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}/courses/${courseId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+      const data = await response.json();
       if (data.success) {
-        fetchCourses()
+        fetchCourses();
       } else {
-        alert("Error deleting course: " + data.message)
+        alert("Error deleting course: " + data.message);
       }
     } catch (error) {
-      console.error("Error deleting course:", error)
-      alert("Error deleting course. Please try again.")
+      console.error("Error deleting course:", error);
+      alert("Error deleting course. Please try again.");
     }
-  }
+  };
 
   const handleEditCourse = (course: Course) => {
-    setEditingCourse(course)
-    setShowForm(true)
-  }
+    setEditingCourse(course);
+    setShowForm(true);
+  };
 
   const handleFormClose = () => {
-    setShowForm(false)
-    setEditingCourse(null)
-    fetchCourses()
-  }
+    setShowForm(false);
+    setEditingCourse(null);
+    fetchCourses();
+  };
 
   const getCategoryColor = (category: string) => {
     const colors = {
@@ -82,18 +114,18 @@ export default function AdminPage() {
       DevOps: "bg-red-100 text-red-800",
       Design: "bg-pink-100 text-pink-800",
       Other: "bg-gray-100 text-gray-800",
-    }
-    return colors[category as keyof typeof colors] || colors.Other
-  }
+    };
+    return colors[category as keyof typeof colors] || colors.Other;
+  };
 
   const getLevelColor = (level: string) => {
     const colors = {
       Beginner: "bg-green-100 text-green-800",
       Intermediate: "bg-yellow-100 text-yellow-800",
       Advanced: "bg-red-100 text-red-800",
-    }
-    return colors[level as keyof typeof colors] || colors.Beginner
-  }
+    };
+    return colors[level as keyof typeof colors] || colors.Beginner;
+  };
 
   const getTierBadge = (tier?: string) => {
     if (tier === "premium") {
@@ -102,17 +134,17 @@ export default function AdminPage() {
           <Crown className="h-3 w-3 mr-1" />
           Premium
         </Badge>
-      )
+      );
     }
-    return null
-  }
+    return null;
+  };
 
   if (showForm) {
-    return <CourseForm course={editingCourse} onClose={handleFormClose} />
+    return <CourseForm course={editingCourse} onClose={handleFormClose} />;
   }
 
   if (showStats) {
-    return <AdminStats onClose={() => setShowStats(false)} />
+    return <AdminStats onClose={() => setShowStats(false)} />;
   }
 
   return (
@@ -121,7 +153,9 @@ export default function AdminPage() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Admin Dashboard
+              </h1>
               <p className="text-gray-600">Manage your courses and content</p>
             </div>
           </div>
@@ -176,7 +210,9 @@ export default function AdminPage() {
             <CardContent>
               <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                {searchTerm || filter !== "all" ? "No courses found" : "No courses yet"}
+                {searchTerm || filter !== "all"
+                  ? "No courses found"
+                  : "No courses yet"}
               </h3>
               <p className="text-gray-600 mb-6">
                 {searchTerm || filter !== "all"
@@ -198,14 +234,23 @@ export default function AdminPage() {
             </div>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {courses.map((course) => (
-                <Card key={course._id} className="hover:shadow-lg transition-shadow">
+                <Card
+                  key={course._id}
+                  className="hover:shadow-lg transition-shadow"
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex flex-wrap gap-2">
-                        <Badge className={getCategoryColor(course.category || "Other")}>
+                        <Badge
+                          className={getCategoryColor(
+                            course.category || "Other"
+                          )}
+                        >
                           {course.category || "Other"}
                         </Badge>
-                        <Badge className={getLevelColor(course.level || "Beginner")}>
+                        <Badge
+                          className={getLevelColor(course.level || "Beginner")}
+                        >
                           {course.level || "Beginner"}
                         </Badge>
                         {getTierBadge(course.tier)}
@@ -219,7 +264,9 @@ export default function AdminPage() {
                       <BookOpen className="h-5 w-5 text-blue-600" />
                       {course.title}
                     </CardTitle>
-                    <CardDescription className="line-clamp-2">{course.description}</CardDescription>
+                    <CardDescription className="line-clamp-2">
+                      {course.description}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3 mb-4">
@@ -229,25 +276,35 @@ export default function AdminPage() {
                         </span>
                         <span>
                           <strong>
-                            {course.topics?.reduce((acc, topic) => acc + (topic.subTopics?.length || 0), 0) || 0}
+                            {course.topics?.reduce(
+                              (acc, topic) =>
+                                acc + (topic.subTopics?.length || 0),
+                              0
+                            ) || 0}
                           </strong>{" "}
                           lessons
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm text-gray-600">
                         <span className="font-medium">Base Price: </span>
-                        <span>{course.price === 0 ? "Free" : `$${course.price}`}</span>
+                        <span>
+                          {course.price === 0 ? "Free" : `$${course.price}`}
+                        </span>
                       </div>
-                      {course.premiumPrice !== undefined && course.premiumPrice > 0 && (
-                        <div className="flex items-center justify-between text-sm text-gray-600">
-                          <span className="font-medium">Premium Price: </span>
-                          <span>${course.premiumPrice}</span>
-                        </div>
-                      )}
+                      {course.premiumPrice !== undefined &&
+                        course.premiumPrice > 0 && (
+                          <div className="flex items-center justify-between text-sm text-gray-600">
+                            <span className="font-medium">Premium Price: </span>
+                            <span>${course.premiumPrice}</span>
+                          </div>
+                        )}
                       {course.tags && course.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1">
                           {course.tags.slice(0, 3).map((tag, index) => (
-                            <span key={index} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                            <span
+                              key={index}
+                              className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded"
+                            >
                               {tag}
                             </span>
                           ))}
@@ -260,12 +317,21 @@ export default function AdminPage() {
                       )}
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEditCourse(course)} className="flex-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditCourse(course)}
+                        className="flex-1"
+                      >
                         <Edit className="h-4 w-4 mr-1" />
                         Edit
                       </Button>
                       <Link href={`/courses/${course._id}`} className="flex-1">
-                        <Button variant="outline" size="sm" className="w-full bg-transparent">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full bg-transparent"
+                        >
                           <Eye className="h-4 w-4 mr-1" />
                           View
                         </Button>
@@ -287,5 +353,5 @@ export default function AdminPage() {
         )}
       </div>
     </div>
-  )
+  );
 }
