@@ -14,6 +14,7 @@ import Link from "next/link";
 import type { Course } from "@/types/course";
 import WidthWrapper from "@/components/WidthWrapper";
 import { API_CONFIG } from "@/lib/config";
+import { Badge } from "@/components/ui/badge";
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -25,33 +26,36 @@ export default function CoursesPage() {
       try {
         setLoading(true);
         setError(null);
-        
+
         const response = await fetch(`${API_CONFIG.BASE_URL}/courses`, {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
+          credentials: "include",
         });
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
         const data = await response.json();
-        
+
         if (data.success) {
           setCourses(data.data);
         } else {
-          throw new Error(data.message || 'Failed to fetch courses');
+          throw new Error(data.message || "Failed to fetch courses");
         }
       } catch (error) {
-        console.error('Error fetching courses:', error);
-        setError(error instanceof Error ? error.message : 'An error occurred while fetching courses');
+        console.error("Error fetching courses:", error);
+        setError(
+          error instanceof Error
+            ? error.message
+            : "An error occurred while fetching courses"
+        );
       } finally {
         setLoading(false);
       }
     };
-
     fetchCourses();
   }, []);
 
@@ -60,13 +64,16 @@ export default function CoursesPage() {
     if (course.totalDuration) {
       return `${course.totalDuration} min`;
     }
-    
+
     const totalDuration = course.topics.reduce((total, topic) => {
-      return total + topic.subTopics.reduce((topicTotal, subTopic) => {
-        return topicTotal + (subTopic.duration || 15);
-      }, 0);
+      return (
+        total +
+        topic.subTopics.reduce((topicTotal, subTopic) => {
+          return topicTotal + (subTopic.duration || 15);
+        }, 0)
+      );
     }, 0);
-    
+
     return `${totalDuration} min`;
   };
 
@@ -75,7 +82,7 @@ export default function CoursesPage() {
     if (course.totalLessons) {
       return course.totalLessons;
     }
-    
+
     return course.topics.reduce((total, topic) => {
       return total + topic.subTopics.length;
     }, 0);
@@ -86,14 +93,19 @@ export default function CoursesPage() {
     if (course.premiumLessons !== undefined) {
       return course.premiumLessons;
     }
-    
+
     return course.topics.reduce((total, topic) => {
-      return total + topic.subTopics.filter(subTopic => subTopic.tier === 'premium').length;
+      return (
+        total +
+        topic.subTopics.filter((subTopic) => subTopic.tier === "premium").length
+      );
     }, 0);
   };
 
   const getCourseRating = (course: Course) => {
-    return course.rating > 0 ? course.rating.toFixed(1) : '4.5'; // Default rating if none set
+    return course.rating && course.rating > 0
+      ? course.rating.toFixed(1)
+      : "4.5"; // Default rating if none set
   };
 
   if (loading) {
@@ -127,8 +139,8 @@ export default function CoursesPage() {
                 Error Loading Courses
               </h3>
               <p className="text-red-600 mb-4">{error}</p>
-              <Button 
-                onClick={() => window.location.reload()} 
+              <Button
+                onClick={() => window.location.reload()}
                 variant="outline"
                 className="border-red-300 text-red-700 hover:bg-red-50"
               >
@@ -142,7 +154,7 @@ export default function CoursesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
+    <div className="min-h-screen  py-10">
       <WidthWrapper>
         <div className="flex items-start flex-col gap-4 mb-8">
           <Link href="/">
@@ -158,7 +170,6 @@ export default function CoursesPage() {
             </p>
           </div>
         </div>
-
         {courses.length === 0 ? (
           <div className="text-center py-12">
             <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -171,15 +182,15 @@ export default function CoursesPage() {
           </div>
         ) : (
           <>
-            <div className="mb-6 text-center">
+            {/* <div className="mb-6 text-center">
               <p className="text-gray-600">
                 <span className="font-semibold text-blue-600">
                   {courses.length}
                 </span>{" "}
-                course{courses.length !== 1 ? 's' : ''} available
+                course
+                {courses.length !== 1 ? "s" : ""} available
               </p>
-            </div>
-
+            </div> */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {courses.map((course) => (
                 <Card
@@ -190,10 +201,13 @@ export default function CoursesPage() {
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <BookOpen className="h-5 w-5 text-blue-600" />
-                        <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                        <Badge
+                          variant="outline"
+                          className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full"
+                        >
                           {course.topics?.length || 0} Topics
-                        </span>
-                        {course.tier === 'premium' && (
+                        </Badge>
+                        {course.tier === "premium" && (
                           <Crown className="h-4 w-4 text-yellow-500" />
                         )}
                       </div>
@@ -216,34 +230,37 @@ export default function CoursesPage() {
                       <div className="flex items-center justify-between text-sm text-gray-600">
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4" />
-                          <span>
-                            {getTotalLessons(course)} lessons
-                          </span>
+                          <span>{getTotalLessons(course)} lessons</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Clock className="h-4 w-4" />
                           <span>{getCourseDuration(course)}</span>
                         </div>
                       </div>
-
                       {/* Course Level and Category */}
                       <div className="flex items-center justify-between text-sm">
-                        <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium">
+                        <Badge
+                          variant="outline"
+                          className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium"
+                        >
                           {course.level}
-                        </span>
-                        <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-medium">
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-medium"
+                        >
                           {course.category}
-                        </span>
+                        </Badge>
                       </div>
-
                       {/* Premium Content Info */}
                       {getPremiumLessonsCount(course) > 0 && (
                         <div className="flex items-center gap-1 text-xs text-yellow-600 bg-yellow-50 px-2 py-1 rounded">
                           <Crown className="h-3 w-3" />
-                          <span>{getPremiumLessonsCount(course)} premium lessons</span>
+                          <span>
+                            {getPremiumLessonsCount(course)} premium lessons
+                          </span>
                         </div>
                       )}
-
                       {/* Course Topics Preview */}
                       {course.topics && course.topics.length > 0 && (
                         <div className="space-y-1">
@@ -267,33 +284,40 @@ export default function CoursesPage() {
                           </div>
                         </div>
                       )}
-
                       {/* Pricing Info */}
                       <div className="flex items-center justify-between pt-2 border-t">
                         <div className="text-sm">
-                          {course.price > 0 ? (
+                          {course.price && course.price > 0 ? (
                             <span className="font-semibold text-green-600">
                               ${course.price}
                             </span>
                           ) : (
-                            <span className="font-semibold text-green-600">Free</span>
-                          )}
-                          {course.premiumPrice > 0 && course.tier !== 'premium' && (
-                            <span className="text-xs text-gray-500 ml-1">
-                              (Premium: NPR {course.premiumPrice})
+                            <span className="font-semibold text-green-600">
+                              Free
                             </span>
                           )}
+                          {course.premiumPrice &&
+                            course.premiumPrice > 0 &&
+                            course.tier !== "premium" && (
+                              <span className="text-xs text-gray-500 ml-1">
+                                (Premium: NPR {course.premiumPrice})
+                              </span>
+                            )}
                         </div>
-                        {course.enrollmentCount > 0 && (
-                          <span className="text-xs text-gray-500">
-                            {course.enrollmentCount} enrolled
-                          </span>
-                        )}
+                        {course.enrollmentCount &&
+                          course.enrollmentCount > 0 && (
+                            <span className="text-xs text-gray-500">
+                              {course.enrollmentCount} enrolled
+                            </span>
+                          )}
                       </div>
                     </div>
                     <Link href={`/courses/${course._id}`}>
                       <Button className="w-full">
-                        {course.price > 0 || course.tier === 'premium' ? 'View Course' : 'Start Learning'}
+                        {(course.price && course.price > 0) ||
+                        course.tier === "premium"
+                          ? "View Course"
+                          : "Start Learning"}
                       </Button>
                     </Link>
                   </CardContent>

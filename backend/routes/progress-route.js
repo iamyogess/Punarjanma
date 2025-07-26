@@ -1,18 +1,16 @@
 import express from "express"
 import Course from "../models/course-model.js"
 import { authenticateUser } from "../middleware/auth-middleware.js"
+import UserModel from "../models/user-model.js"
 import UserProgress from "../models/user-process-model.js"
 
 const router = express.Router()
 
-// Get user progress for a course
 router.get("/courses/:courseId/progress", authenticateUser, async (req, res) => {
   try {
     const userId = req.user.id
     const { courseId } = req.params
-
     const progress = await UserProgress.findOne({ userId, courseId })
-
     if (!progress) {
       return res.json({
         success: true,
@@ -25,7 +23,6 @@ router.get("/courses/:courseId/progress", authenticateUser, async (req, res) => 
         },
       })
     }
-
     res.json({
       success: true,
       data: progress,
@@ -46,11 +43,9 @@ router.post("/courses/:courseId/progress", authenticateUser, async (req, res) =>
     const userId = req.user.id
     const { courseId } = req.params
     const { subTopicId, completed } = req.body
-
     const updateOperation = completed
       ? { $addToSet: { completedLessons: subTopicId } }
       : { $pull: { completedLessons: subTopicId } }
-
     const progress = await UserProgress.findOneAndUpdate(
       { userId, courseId },
       {
@@ -59,7 +54,6 @@ router.post("/courses/:courseId/progress", authenticateUser, async (req, res) =>
       },
       { upsert: true, new: true },
     )
-
     res.json({
       success: true,
       data: progress,
@@ -80,7 +74,6 @@ router.post("/courses/:courseId/enroll", authenticateUser, async (req, res) => {
   try {
     const userId = req.user.id
     const { courseId } = req.params
-
     // Check if course exists
     const course = await Course.findById(courseId)
     if (!course) {
@@ -89,7 +82,6 @@ router.post("/courses/:courseId/enroll", authenticateUser, async (req, res) => {
         message: "Course not found",
       })
     }
-
     // Create or update enrollment
     const progress = await UserProgress.findOneAndUpdate(
       { userId, courseId },
@@ -99,11 +91,17 @@ router.post("/courses/:courseId/enroll", authenticateUser, async (req, res) => {
       { upsert: true, new: true },
     )
 
+    // Update user's enrolledCourses
+    await UserModel.findByIdAndUpdate(
+      userId,
+      { $addToSet: { enrolledCourses: courseId } }, // Add courseId to enrolledCourses array
+      { new: true },
+    )
+
     // Update course enrollment count
     await Course.findByIdAndUpdate(courseId, {
       $inc: { enrollmentCount: 1 },
     })
-
     res.json({
       success: true,
       data: progress,
@@ -118,5 +116,4 @@ router.post("/courses/:courseId/enroll", authenticateUser, async (req, res) => {
     })
   }
 })
-
 export default router
