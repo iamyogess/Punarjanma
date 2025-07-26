@@ -16,22 +16,60 @@ import {
   ChevronDown,
   ChevronRight,
   Video,
+  Clock,
   BookOpen,
   CheckCircle,
   Circle,
   Lock,
   Crown,
+  BotMessageSquare,
+  MessagesSquare,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
 import type { Course, SubTopic, Topic, UserProgress } from "@/types/course";
 import WidthWrapper from "@/components/WidthWrapper";
 import PremiumUpgradeSection from "@/components/premium-upgrade-section";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { ChatModal } from "@/components/chat-modal";
 import { EnhancedVideoPlayer } from "@/components/enhanced-video-player";
 
-const CourseIdPage = () => {
+// Utility function to convert YouTube URL to embeddable format
+const getYouTubeEmbedUrl = (url: string): string | null => {
+  if (!url) return null;
+
+  try {
+    // Handle youtu.be format
+    const youtuBeMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
+    if (youtuBeMatch) {
+      return `https://www.youtube.com/embed/${youtuBeMatch[1]}`;
+    }
+
+    // Handle youtube.com/watch format
+    const youtubeMatch = url.match(/youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/);
+    if (youtubeMatch) {
+      return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+    }
+
+    // Handle already embedded format
+    if (url.includes("youtube.com/embed/")) {
+      return url;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error parsing YouTube URL:", error);
+    return null;
+  }
+};
+
+export default function CourseDetailPage() {
   const params = useParams();
-  const { id } = params;
   const { user, isPremiumUser, isEnrolled, refreshUser } = useAuth();
   const [course, setCourse] = useState<Course | null>(null);
   const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
@@ -43,19 +81,22 @@ const CourseIdPage = () => {
   );
   const [currentTopicTitle, setCurrentTopicTitle] = useState<string>("");
 
+  const [aiChatOpen, setAiChatOpen] = useState(false);
+  const [instructorChatOpen, setInstructorChatOpen] = useState(false);
+
   useEffect(() => {
-    if (id) {
+    if (params.id) {
       fetchCourse();
       if (user) {
         fetchUserProgress();
       }
     }
-  }, [id, user]);
+  }, [params.id, user]);
 
   const fetchCourse = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/courses/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/courses/${params.id}`,
         {
           method: "GET",
           headers: {
@@ -90,7 +131,7 @@ const CourseIdPage = () => {
   const fetchUserProgress = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/courses/${id}/progress`,
+        `${process.env.NEXT_PUBLIC_API_URL}/courses/${params.id}/progress`,
         {
           credentials: "include",
         }
@@ -119,7 +160,7 @@ const CourseIdPage = () => {
     setEnrolling(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/courses/${id}/enroll`,
+        `${process.env.NEXT_PUBLIC_API_URL}/courses/${params.id}/enroll`,
         {
           method: "POST",
           credentials: "include",
@@ -264,7 +305,7 @@ const CourseIdPage = () => {
   const userIsEnrolled = isEnrolled(course._id);
 
   return (
-    <div className="min-h-screen  py-10">
+    <div className="min-h-screen bg-gray-50 py-10">
       <WidthWrapper>
         <div className="flex flex-col items-start gap-4 mb-8">
           <Link href="/courses">
@@ -302,7 +343,7 @@ const CourseIdPage = () => {
                 </Badge>
               )}
               <Badge variant="secondary" className="flex items-center gap-1">
-                <Video className="h-3 w-3" />
+                <Clock className="h-3 w-3" />
                 {totalLessons * 15} min
               </Badge>
             </div>
@@ -314,20 +355,17 @@ const CourseIdPage = () => {
           <div className="mb-8 space-y-4">
             {!userIsEnrolled && (
               <Alert>
+                <BookOpen className="h-4 w-4" />
                 <AlertDescription>
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-x-2">
-                      <BookOpen className="h-4 w-4" />
-                      <span>
-                        Enroll in this course to track your progress and access
-                        content.
-                      </span>
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <span>
+                      Enroll in this course to track your progress and access
+                      content.
+                    </span>
                     <Button
                       onClick={enrollInCourse}
                       disabled={enrolling}
                       size="sm"
-                      className="cursor-pointer"
                     >
                       {enrolling ? "Enrolling..." : "Enroll Now"}
                     </Button>
@@ -381,6 +419,7 @@ const CourseIdPage = () => {
                     key={topic._id}
                     open={openTopics.has(topic._id)}
                     onOpenChange={() => toggleTopic(topic._id)}
+                    className="border-b pb-2"
                   >
                     <CollapsibleTrigger asChild>
                       <Button
@@ -400,70 +439,111 @@ const CourseIdPage = () => {
                         )}
                       </Button>
                     </CollapsibleTrigger>
-                    <CollapsibleContent className="pl-4 space-y-1">
+
+                    <CollapsibleContent className="pl-4 space-y-1 ">
                       {topic.subTopics.map((subTopic) => {
                         const isAccessible = isSubTopicAccessible(subTopic);
                         const isCompleted = isSubTopicCompleted(subTopic._id);
                         return (
-                          <div
-                            key={subTopic._id}
-                            className="flex items-center gap-2"
-                          >
-                            <Button
-                              variant="ghost"
-                              className={`flex-1 justify-start p-3 h-auto text-left ${
-                                isAccessible
-                                  ? "hover:bg-blue-50 cursor-pointer"
-                                  : "opacity-60 cursor-not-allowed"
-                              } ${
-                                selectedSubTopic?._id === subTopic._id
-                                  ? "bg-blue-50 border-l-4 border-l-blue-500"
-                                  : ""
-                              }`}
-                              onClick={() =>
-                                isAccessible &&
-                                handleSubTopicClick(subTopic, topic)
-                              }
-                              disabled={!isAccessible}
-                            >
-                              <div className="flex items-center gap-3 flex-1">
-                                {isAccessible ? (
-                                  <Video className="h-4 w-4 text-blue-600 flex-shrink-0" />
-                                ) : (
-                                  <Lock className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                                )}
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="block font-medium">
-                                      {subTopic.title}
-                                    </span>
-                                    {subTopic.tier === "premium" && (
-                                      <Crown className="h-3 w-3 text-yellow-500" />
-                                    )}
-                                  </div>
-                                  <span className="text-xs text-gray-500">
-                                    {subTopic.duration || 15} min
-                                  </span>
-                                </div>
-                              </div>
-                            </Button>
-                            {userIsEnrolled && (
+                          <div key={subTopic._id}>
+                            <div className="flex items-center gap-2">
                               <Button
                                 variant="ghost"
-                                size="sm"
+                                className={`flex-1 justify-start p-3 h-auto text-left ${
+                                  isAccessible
+                                    ? "hover:bg-blue-50 cursor-pointer"
+                                    : "opacity-60 cursor-not-allowed"
+                                } ${
+                                  selectedSubTopic?._id === subTopic._id
+                                    ? "bg-blue-50 border-l-4 border-l-blue-500"
+                                    : ""
+                                }`}
                                 onClick={() =>
-                                  isAccessible && markAsCompleted(subTopic._id)
+                                  isAccessible &&
+                                  handleSubTopicClick(subTopic, topic)
                                 }
-                                className="p-1"
                                 disabled={!isAccessible}
                               >
-                                {isCompleted ? (
-                                  <CheckCircle className="h-5 w-5 text-green-600" />
-                                ) : (
-                                  <Circle className="h-5 w-5 text-gray-400" />
-                                )}
+                                <div className="flex items-center gap-3 flex-1">
+                                  {isAccessible ? (
+                                    <Video className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                                  ) : (
+                                    <Lock className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                                  )}
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="block font-medium">
+                                        {subTopic.title}
+                                      </span>
+                                      {subTopic.tier === "premium" && (
+                                        <Crown className="h-3 w-3 text-yellow-500" />
+                                      )}
+                                    </div>
+                                    <span className="text-xs text-gray-500">
+                                      {subTopic.duration || 15} min
+                                    </span>
+                                  </div>
+                                </div>
                               </Button>
-                            )}
+                              {userIsEnrolled && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    isAccessible &&
+                                    markAsCompleted(subTopic._id)
+                                  }
+                                  className="p-1"
+                                  disabled={!isAccessible}
+                                >
+                                  {isCompleted ? (
+                                    <CheckCircle className="h-5 w-5 text-green-600" />
+                                  ) : (
+                                    <Circle className="h-5 w-5 text-gray-400" />
+                                  )}
+                                </Button>
+                              )}
+                            </div>
+                            <div className="w-full flex justify-end gap-x-4 mr-32">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="bg-primary h-8 w-8 rounded-full flex justify-center items-center">
+                                      <button
+                                        className="flex items-center gap-x-2 p-2"
+                                        onClick={() => {
+                                          setSelectedSubTopic(subTopic);
+                                          setCurrentTopicTitle(topic.title);
+                                          setAiChatOpen(true);
+                                        }}
+                                      >
+                                        <BotMessageSquare className="text-white" />
+                                      </button>
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Chat with AI about this lesson</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                                {/* <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      className="flex items-center gap-x-2"
+                                      onClick={() => {
+                                        setSelectedSubTopic(subTopic)
+                                        setCurrentTopicTitle(topic.title)
+                                        setInstructorChatOpen(true)
+                                      }}
+                                    >
+                                      <MessagesSquare className="text-primary/80 hover:text-primary transition-colors" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Chat with Instructor about this lesson</p>
+                                  </TooltipContent>
+                                </Tooltip> */}
+                              </TooltipProvider>
+                            </div>
                           </div>
                         );
                       })}
@@ -485,9 +565,26 @@ const CourseIdPage = () => {
             />
           </div>
         </div>
+
+        {/* Chat Modals */}
+        <ChatModal
+          isOpen={aiChatOpen}
+          onClose={() => setAiChatOpen(false)}
+          chatType="ai"
+          courseTitle={course.title}
+          lessonTitle={selectedSubTopic?.title}
+          lessonContent={selectedSubTopic?.videoContent}
+          lessonTranscript="Mock transcript content for AI context..."
+        />
+
+        <ChatModal
+          isOpen={instructorChatOpen}
+          onClose={() => setInstructorChatOpen(false)}
+          chatType="instructor"
+          courseTitle={course.title}
+          lessonTitle={selectedSubTopic?.title}
+        />
       </WidthWrapper>
     </div>
   );
-};
-
-export default CourseIdPage;
+}

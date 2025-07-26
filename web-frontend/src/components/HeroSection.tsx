@@ -5,11 +5,8 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import WidthWrapper from "./WidthWrapper";
-import PricingCards from "./pricingCard/pricing-card";
-import { useAuth } from "@/contexts/auth-context";
 
 const HeroSection = () => {
-  const { user } = useAuth();
 
   return (
     <section className="md:h-[85vh] py-12 md:py-20">
@@ -47,17 +44,6 @@ const HeroSection = () => {
                 <Link href="/auth/signup">Start Learning</Link>
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
-
-              {user && (
-                <Button
-                  variant="outline"
-                  className="group h-11 md:h-13 md:w-52 cursor-pointer"
-                >
-                  <GraduationCap className="mr-2 h-5 w-5" />
-                  <Link href="/courses">Browse Courses</Link>
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Button>
-              )}
             </motion.div>
           </div>
 

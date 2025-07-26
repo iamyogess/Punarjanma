@@ -285,7 +285,7 @@ export default function CoursesPage() {
                           href={`/courses/${course._id}`}
                           className="block mt-3 cursor-pointer"
                         >
-                          <Button className="w-full text-white">
+                          <Button className="w-full text-white cursor-pointer">
                             {(course.price && course.price > 0) ||
                             course.tier === "premium"
                               ? "View Course"

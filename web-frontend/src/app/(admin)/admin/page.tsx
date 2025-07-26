@@ -288,14 +288,14 @@ export default function AdminPage() {
                       <div className="flex items-center justify-between text-sm text-gray-600">
                         <span className="font-medium">Base Price: </span>
                         <span>
-                          {course.price === 0 ? "Free" : `$${course.price}`}
+                          {course.price === 0 ? "Free" : `Rs. ${course.price}`}
                         </span>
                       </div>
                       {course.premiumPrice !== undefined &&
                         course.premiumPrice > 0 && (
                           <div className="flex items-center justify-between text-sm text-gray-600">
                             <span className="font-medium">Premium Price: </span>
-                            <span>${course.premiumPrice}</span>
+                            <span>Rs. {course.premiumPrice}</span>
                           </div>
                         )}
                       {course.tags && course.tags.length > 0 && (
