@@ -34,7 +34,7 @@ export interface Course {
   isPublished?: boolean;
   thumbnail?: string;
   tier?: "free" | "premium";
-  premiumLessons: string | number;
+  premiumLessons: number;
   totalLessons: number | string;
   totalDuration: number | string;
 }

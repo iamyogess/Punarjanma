@@ -1,36 +1,25 @@
-// import {
-//   Sidebar,
-//   SidebarContent,
-//   SidebarFooter,
-//   SidebarGroup,
-//   SidebarHeader,
-// } from "@/components/ui/sidebar"
+"use client";
 
-// export function AppSidebar() {
-//   return (
-//     <Sidebar>
-//       <SidebarHeader />
-//       <SidebarContent>
-//         <SidebarGroup />
-//         <SidebarGroup />
-//       </SidebarContent>
-//       <SidebarFooter />
-//     </Sidebar>
-//   )
-// }
-"use client"
-import { Book, Calendar, Home, Inbox, Layout, Search, Settings, Users } from "lucide-react"
+import {
+  Book,
+  Layout,
+  Search,
+  Settings,
+  Users,
+} from "lucide-react";
 
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+import Image from "next/image";
+import Link from "next/link";
 
 // Menu items.
 const items = [
@@ -59,14 +48,31 @@ const items = [
     url: "#",
     icon: Settings,
   },
-]
+];
 
 export function AppSidebar() {
   return (
     <Sidebar>
+      <SidebarHeader>
+        <div className="border-b pb-4">
+          <Link href="/admin" className="flex items-center justify-center gap-x-2">
+            <div className="h-14 w-14">
+              <Image
+                src="/logo.png"
+                alt="E-Learning Platform Logo"
+                width={400}
+                height={400}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <span className="text-xl font-bold text-gray-900 hidden sm:block mt-3">
+              Punarjanma
+            </span>
+          </Link>
+        </div>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          {/* <SidebarGroupLabel>Application</SidebarGroupLabel> */}
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -84,5 +90,5 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }
