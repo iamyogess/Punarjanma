@@ -11,7 +11,7 @@ const ChatBotButton = () => {
     <>
       <button
         onClick={() => setIsChatOpen(true)}
-        className="fixed right-6 bottom-6 h-16 w-16 flex justify-center items-center bg-primary rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 z-50"
+        className="fixed right-12 bottom-10 h-16 w-16 flex justify-center items-center bg-primary rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 z-50"
         aria-label="Open customer support chat"
       >
         <BotMessageSquare className="text-white h-8 w-8" />

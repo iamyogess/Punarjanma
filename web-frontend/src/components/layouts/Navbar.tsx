@@ -32,6 +32,7 @@ export default function Navigation() {
   const desktopNavItems = [
     { name: "Home", href: "/", requiresAuth: false },
     { name: "Courses", href: "/courses", requiresAuth: false },
+    { name: "Chat PDF", href: "/chat-pdf", requiresAuth: false },
     { name: "About", href: "/about", requiresAuth: false },
     { name: "Pricing", href: "/#pricing", requiresAuth: false },
     { name: "Contact", href: "/contact", requiresAuth: false },
@@ -42,7 +43,7 @@ export default function Navigation() {
   const mobileNavItems = [
     { name: "Home", href: "/", requiresAuth: false },
     { name: "Courses", href: "/courses", requiresAuth: false },
-    // { name: "AI Features", href: "/ai-features", requiresAuth: false },
+    { name: "Chat PDF", href: "/chat-pdf", requiresAuth: false },
     { name: "About", href: "/about", requiresAuth: false },
     { name: "Pricing", href: "/#pricing", requiresAuth: false },
     { name: "Features", href: "/#features", requiresAuth: false },
@@ -80,9 +81,7 @@ export default function Navigation() {
                 key={item.name}
                 href={item.href}
                 className={`text-sm transition-colors font-medium ${
-                  isActive
-                    ? "font-semibold"
-                    : "text-gray-600 "
+                  isActive ? "font-semibold" : "text-gray-600 "
                 }`}
               >
                 {item.name}
