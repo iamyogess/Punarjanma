@@ -3,7 +3,6 @@ import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
-  Bot,
   FileText,
   Video,
   MessageSquareText,
@@ -12,13 +11,6 @@ import {
 } from "lucide-react";
 
 const aiFeatures = [
-  {
-    icon: <Bot className="w-10 h-10" />,
-    title: "AI Chat Assistant",
-    description:
-      "Ask questions, clarify doubts, and learn instantly with our chatbot.",
-    href: "/ai-tools/chatbot",
-  },
   {
     icon: <Sparkles className="w-10 h-10" />,
     title: "Video Summarizer",

@@ -14,7 +14,6 @@ import Link from "next/link";
 import type { Course } from "@/types/course";
 import WidthWrapper from "@/components/WidthWrapper";
 import { API_CONFIG } from "@/lib/config";
-import { Badge } from "@/components/ui/badge";
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
