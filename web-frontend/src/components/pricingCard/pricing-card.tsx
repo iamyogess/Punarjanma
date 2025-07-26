@@ -19,6 +19,7 @@ interface PricingPlan {
   id: string;
   name: string;
   description: string;
+  href: string;
   price: string;
   priceDescription?: string;
   buttonText: string;
@@ -30,99 +31,103 @@ const pricingPlans: PricingPlan[] = [
   {
     id: "starter",
     name: "Starter",
-    description: "Begin your learning journey for free",
+    description: "Start learning with essential features",
     price: "Free",
-    buttonText: "Start for free",
+    buttonText: "Start for Free",
+    href: "/register",
     isPopular: false,
     features: [
       {
-        title: "5 courses",
-        description: "access per month\nthen $2 per additional course",
+        title: "Access to 5 courses/month",
+        description: "Enjoy up to 5 courses monthly, then $2 per extra course",
       },
       {
         title: "Basic certificates",
-        description: "Course completion certificates",
+        description: "Get a certificate after completing each course",
       },
       {
         title: "Community access",
-        description: "Join study groups and forums",
+        description: "Join forums and study groups to connect with others",
       },
       {
-        title: "Basic progress tracking",
-        description: "Monitor your learning journey",
+        title: "Progress tracking",
+        description: "Keep track of your course progress",
       },
       {
         title: "Email support",
-        description: "Response within 48 hours",
+        description: "Response within 48 hours during weekdays",
       },
     ],
   },
   {
     id: "ai-assist",
-    name: "AI Assist",
-    description: "Enhance your learning with smart tools",
+    name: "AI Assist (Free for Limited Time)",
+    description: "Unlock smart learning tools powered by AI",
     price: "Free (Limited Time)",
-    buttonText: "Try AI Tools",
+    buttonText: "Try AI Features",
+    href: "/ai-features",
+
     isPopular: false,
     features: [
       {
-        title: "Everything in Starter",
-        description: "Plus advanced AI-powered tools",
+        title: "All Starter features",
+        description: "Includes everything in the Starter plan",
       },
       {
         title: "Smart PDF Summarization",
-        description: "Get quick summaries of your documents",
+        description: "Quickly understand documents with AI-generated summaries",
       },
       {
         title: "Ask Questions to Your PDFs",
-        description: "Instant answers from your materials",
+        description: "Instant answers from your study materials",
       },
       {
-        title: "Personalized Learning Assistant",
-        description: "AI that helps you stay on track",
+        title: "AI Learning Assistant",
+        description: "Stay on track with personalized AI support",
       },
       {
-        title: "Context-aware Recommendations",
-        description: "Learn what matters most to you",
+        title: "Smart Recommendations",
+        description: "Get suggestions tailored to your goals and activity",
       },
       {
-        title: "Limited time free access",
-        description: "Premium features available for free now",
+        title: "Free during launch period",
+        description: "Premium AI tools available at no cost for now",
       },
     ],
   },
   {
     id: "pro",
     name: "Pro",
-    description: "Accelerate your rehabilitation and career growth",
-    price: "$29",
+    description: "Unlock your full learning potential with premium access",
+    price: "Rs. 299",
     priceDescription: "/month",
-    buttonText: "Start learning",
+    buttonText: "Upgrade to Pro",
+    href: "/",
     isPopular: true,
     features: [
       {
-        title: "Unlimited courses",
-        description: "access\nFull library of educational content",
+        title: "Unlimited course access",
+        description: "Explore our entire course library without limits",
       },
       {
         title: "Accredited certificates",
-        description: "Industry-recognized credentials",
+        description: "Earn industry-recognized certifications",
       },
       {
         title: "1-on-1 mentorship",
-        description: "Weekly sessions with career counselors",
+        description: "Weekly career coaching with expert mentors",
       },
       {
-        title: "Job placement assistance",
-        description: "Resume help and interview prep",
+        title: "Job placement support",
+        description: "Resume reviews, interview prep, and job referrals",
       },
       {
         title: "Priority support",
-        description: "24/7 chat and phone support",
+        description: "24/7 chat and call assistance",
       },
       {
-        title: "Family portal access",
-        description: "Share progress with loved ones",
+        title: "Family portal",
+        description: "Share your learning journey with your family",
       },
     ],
   },
@@ -147,7 +152,11 @@ export default function PricingCards() {
               key={plan.id}
               className={`bg-white border-gray-200 relative flex flex-col justify-between shadow-none ${
                 plan.isPopular ? "pt-6" : ""
-              } ${index % 2 === 0 ? "" : "-mt-20  drop-shadow-xl drop-shadow-green-600  border-none"}`}
+              } ${
+                index % 2 === 0
+                  ? ""
+                  : "-mt-20  shadow-[8px_10px_36px_-9px_#16a34a] border-none"
+              }`}
             >
               {plan.isPopular && (
                 <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-white px-4 py-1">
@@ -193,7 +202,7 @@ export default function PricingCards() {
                 </div>
 
                 {/* Button */}
-                <Button className="w-full bg-primary hover:bg-teal-700 text-white font-semibold py-3 mt-6">
+                <Button className="w-full text-white font-semibold py-3">
                   {plan.buttonText}
                 </Button>
               </CardContent>

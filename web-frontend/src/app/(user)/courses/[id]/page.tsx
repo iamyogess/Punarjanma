@@ -1,5 +1,4 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,7 +12,6 @@ import {
   ChevronDown,
   ChevronRight,
   Video,
-  Play,
   Clock,
   BookOpen,
   CheckCircle,
@@ -26,8 +24,36 @@ import { useAuth } from "@/contexts/auth-context"
 import { API_CONFIG } from "@/lib/config"
 import type { Course, SubTopic, Topic, UserProgress } from "@/types/course"
 import WidthWrapper from "@/components/WidthWrapper"
-import { DevPaymentSimulator } from "@/components/dev-payment-simulator"
 import PremiumUpgradeSection from "@/components/premium-upgrade-section"
+
+// Utility function to convert YouTube URL to embeddable format
+const getYouTubeEmbedUrl = (url: string): string | null => {
+  if (!url) return null
+
+  try {
+    // Handle youtu.be format
+    const youtuBeMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/)
+    if (youtuBeMatch) {
+      return `https://www.youtube.com/embed/${youtuBeMatch[1]}`
+    }
+
+    // Handle youtube.com/watch format
+    const youtubeMatch = url.match(/youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/)
+    if (youtubeMatch) {
+      return `https://www.youtube.com/embed/${youtubeMatch[1]}`
+    }
+
+    // Handle already embedded format
+    if (url.includes("youtube.com/embed/")) {
+      return url
+    }
+
+    return null
+  } catch (error) {
+    console.error("Error parsing YouTube URL:", error)
+    return null
+  }
+}
 
 export default function CourseDetailPage() {
   const params = useParams()
@@ -282,7 +308,6 @@ export default function CourseDetailPage() {
                 </AlertDescription>
               </Alert>
             )}
-
             {/* Premium Upgrade Section */}
             <PremiumUpgradeSection
               course={course}
@@ -291,16 +316,6 @@ export default function CourseDetailPage() {
               userHasPremium={userHasPremium}
               onPaymentInitiated={handlePaymentInitiated}
             />
-
-            {/* Development Payment Simulator */}
-            {process.env.NODE_ENV === "development" && userIsEnrolled && !userHasPremium && premiumLessons > 0 && (
-              <DevPaymentSimulator
-                courseId={course._id}
-                courseName={course.title}
-                amount={course.premiumPrice || 1000}
-                onPaymentSuccess={() => window.location.reload()}
-              />
-            )}
           </div>
         )}
 
@@ -420,16 +435,31 @@ export default function CourseDetailPage() {
               <CardContent>
                 {selectedSubTopic ? (
                   <div className="space-y-4">
-                    <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center relative overflow-hidden">
-                      <div className="absolute inset-0 bg-black/10"></div>
-                      <div className="text-center z-10">
-                        <div className="bg-white/90 rounded-full p-4 mb-4 mx-auto w-fit">
-                          <Video className="h-12 w-12 text-blue-600" />
+                    {/* YouTube Video Player */}
+                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                      {selectedSubTopic.videoUrl && getYouTubeEmbedUrl(selectedSubTopic.videoUrl) ? (
+                        <iframe
+                          src={getYouTubeEmbedUrl(selectedSubTopic.videoUrl)!}
+                          title={selectedSubTopic.title}
+                          className="w-full h-full"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative">
+                          <div className="absolute inset-0 bg-black/10"></div>
+                          <div className="text-center z-10">
+                            <div className="bg-white/90 rounded-full p-4 mb-4 mx-auto w-fit">
+                              <Video className="h-12 w-12 text-blue-600" />
+                            </div>
+                            <p className="text-gray-700 font-medium">No Video Available</p>
+                            <p className="text-sm text-gray-500">Video content coming soon</p>
+                          </div>
                         </div>
-                        <p className="text-gray-700 font-medium">Video Player</p>
-                        <p className="text-sm text-gray-500">Ready for video content</p>
-                      </div>
+                      )}
                     </div>
+
                     <div className="space-y-3">
                       <div>
                         <div className="flex items-center gap-2 mb-2">
@@ -451,10 +481,6 @@ export default function CourseDetailPage() {
                         <span>Duration: {selectedSubTopic.duration || 15} minutes</span>
                       </div>
                       <div className="space-y-2">
-                        <Button className="w-full">
-                          <Play className="h-4 w-4 mr-2" />
-                          Play Video
-                        </Button>
                         {userIsEnrolled && (
                           <Button
                             variant="outline"

@@ -24,7 +24,7 @@ export default function Navigation() {
 
   const handleLogout = async () => {
     await logout();
-    setIsOpen(false); // Close mobile menu on logout
+    setIsOpen(false);
   };
 
   const desktopNavItems = [

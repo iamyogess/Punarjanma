@@ -41,17 +41,6 @@ const FAQs = () => {
       <WidthWrapper>
         {/* Header */}
         <div className="flex flex-col justify-center items-center space-y-2">
-          {/* <div
-          className="absolute inset-0 w-full h-full"
-          style={{
-            backgroundImage: "url(/faq-img.jpg)",
-            backgroundPosition: "center",
-            backgroundSize: "cover",
-            backgroundRepeat: "no-repeat",
-          }}
-        >
-          <div className="absolute inset-0 bg-black/60"></div>
-        </div> */}
           <h1 className="text-primary text-2xl lg:text-4xl font-semibold">
             Frequently Asked Questions
           </h1>
@@ -72,7 +61,7 @@ const FAQs = () => {
                 <AccordionTrigger className="text-base md:text-lg font-medium">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-sm text-gray-700">
+                <AccordionContent className="text-base text-gray-700">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
