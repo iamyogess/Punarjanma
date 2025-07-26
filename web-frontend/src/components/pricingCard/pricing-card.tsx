@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import WidthWrapper from "../WidthWrapper";
 
 interface PlanFeature {
   title: string;
@@ -56,7 +57,7 @@ const pricingPlans: PricingPlan[] = [
       },
     ],
   },
-   {
+  {
     id: "ai-assist",
     name: "AI Assist",
     description: "Enhance your learning with smart tools",
@@ -64,12 +65,30 @@ const pricingPlans: PricingPlan[] = [
     buttonText: "Try AI Tools",
     isPopular: false,
     features: [
-      { title: "Everything in Starter", description: "Plus advanced AI-powered tools" },
-      { title: "Smart PDF Summarization", description: "Get quick summaries of your documents" },
-      { title: "Ask Questions to Your PDFs", description: "Instant answers from your materials" },
-      { title: "Personalized Learning Assistant", description: "AI that helps you stay on track" },
-      { title: "Context-aware Recommendations", description: "Learn what matters most to you" },
-      { title: "Limited time free access", description: "Premium features available for free now" },
+      {
+        title: "Everything in Starter",
+        description: "Plus advanced AI-powered tools",
+      },
+      {
+        title: "Smart PDF Summarization",
+        description: "Get quick summaries of your documents",
+      },
+      {
+        title: "Ask Questions to Your PDFs",
+        description: "Instant answers from your materials",
+      },
+      {
+        title: "Personalized Learning Assistant",
+        description: "AI that helps you stay on track",
+      },
+      {
+        title: "Context-aware Recommendations",
+        description: "Learn what matters most to you",
+      },
+      {
+        title: "Limited time free access",
+        description: "Premium features available for free now",
+      },
     ],
   },
   {
@@ -111,9 +130,9 @@ const pricingPlans: PricingPlan[] = [
 
 export default function PricingCards() {
   return (
-    <div className="min-h-screen  ">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
+    <div className="mb-32" id="pricing">
+      <WidthWrapper>
+        <div className="text-center mb-32">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Choose Your Learning Path
           </h1>
@@ -123,10 +142,12 @@ export default function PricingCards() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {pricingPlans?.map((plan) => (
+          {pricingPlans?.map((plan, index) => (
             <Card
-              key={plan?.id}
-              className="bg-white border-gray-200 shadow-lg relative"
+              key={plan.id}
+              className={`bg-white border-gray-200 relative flex flex-col justify-between shadow-none ${
+                plan.isPopular ? "pt-6" : ""
+              } ${index % 2 === 0 ? "" : "-mt-20  drop-shadow-xl drop-shadow-green-600  border-none"}`}
             >
               {plan.isPopular && (
                 <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-white px-4 py-1">
@@ -134,19 +155,17 @@ export default function PricingCards() {
                 </Badge>
               )}
 
-              <CardHeader className={`pb-8 ${plan.isPopular ? "pt-8" : ""}`}>
+              <CardHeader className={`pb-4`}>
                 <CardTitle className="text-2xl font-bold text-gray-900">
                   {plan.name}
                 </CardTitle>
                 <CardDescription className="text-gray-600">
                   {plan.description}
                 </CardDescription>
-                <Button className="w-full bg-primary hover:bg-teal-700 text-white font-semibold py-3 mt-4">
-                  {plan.buttonText}
-                </Button>
               </CardHeader>
 
-              <CardContent className="space-y-6">
+              <CardContent className="flex-1 flex flex-col justify-between space-y-6">
+                {/* Price Section */}
                 <div className="text-gray-900">
                   <span className="text-3xl font-bold">{plan.price}</span>
                   {plan.priceDescription && (
@@ -156,6 +175,7 @@ export default function PricingCards() {
                   )}
                 </div>
 
+                {/* Features */}
                 <div className="space-y-4">
                   {plan.features.map((feature, index) => (
                     <div key={index} className="flex items-start gap-3">
@@ -171,18 +191,16 @@ export default function PricingCards() {
                     </div>
                   ))}
                 </div>
+
+                {/* Button */}
+                <Button className="w-full bg-primary hover:bg-teal-700 text-white font-semibold py-3 mt-6">
+                  {plan.buttonText}
+                </Button>
               </CardContent>
             </Card>
           ))}
         </div>
-
-        <div className="text-center mt-12">
-          <p className="text-gray-600 text-sm">
-            All plans include offline access and mobile app support. Cancel
-            anytime.
-          </p>
-        </div>
-      </div>
+      </WidthWrapper>
     </div>
   );
 }

@@ -15,7 +15,7 @@ export default function Home() {
               <p className="text-muted-foreground text-base md:text-lg max-w-md">
                 Discover your potential, upgrade your skills, and build a future
                 you believe in. Punarjanma is more than just a learning platform
-                — it's your path to transformation.
+                — it&apos;s your path to transformation.
               </p>
               <ul className="space-y-2 text-base text-muted-foreground">
                 <li>• Learn from industry experts</li>

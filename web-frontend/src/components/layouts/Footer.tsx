@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import Image from "next/image";
+import WidthWrapper from "../WidthWrapper";
 
 const footerLinks = {
   company: [
@@ -40,25 +41,29 @@ const socialLinks = [
 export default function Footer() {
   return (
     <footer className="bg-background border-t">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <WidthWrapper className={"py-12"}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
           {/* Logo and Description */}
           <div className="lg:col-span-2">
-            <Link href="/" className="text-2xl font-bold text-primary">
-              <Image
-                src={"/images/logo.jpeg"}
-                alt="logo"
-                width={400}
-                height={400}
-                loading="lazy"
-                className="h-[60px] w-[60px] rounded-xl"
-              />
+            <Link href="/" className="flex items-center gap-x-2">
+              <div className="h-14 w-14">
+                <Image
+                  src="/logo.png"
+                  alt="E-Learning Platform Logo"
+                  width={400}
+                  height={400}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <span className="text-xl font-bold text-gray-900 hidden sm:block mt-3">
+                Punarjanma
+              </span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">
               Empowering individuals to reinvent themselves through
-              high-quality, practical, and accessible learning. Whether you're
-              starting fresh or upgrading your skills, Punarjanma is your
-              partner in growth.
+              high-quality, practical, and accessible learning. Whether
+              you&apos;re starting fresh or upgrading your skills, Punarjanma is
+              your partner in growth.
             </p>
             <div className="flex space-x-4 mt-6">
               {socialLinks.map((item) => {
@@ -164,7 +169,7 @@ export default function Footer() {
             </div>
           </div>
         </div>
-      </div>
+      </WidthWrapper>
     </footer>
   );
 }

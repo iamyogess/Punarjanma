@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Menu, LogOut, BookOpen, BarChart3 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import WidthWrapper from "@/components/WidthWrapper"
-import { useAuth } from "@/contexts/auth-context"
+import * as React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Menu, LogOut, BookOpen, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import WidthWrapper from "@/components/WidthWrapper";
+import { useAuth } from "@/contexts/auth-context";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,42 +15,51 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Navigation() {
-  const [isOpen, setIsOpen] = React.useState(false)
-  const { user, logout } = useAuth()
+  const [isOpen, setIsOpen] = React.useState(false);
+  const { user, logout } = useAuth();
 
   const handleLogout = async () => {
-    await logout()
-    setIsOpen(false) // Close mobile menu on logout
-  }
+    await logout();
+    setIsOpen(false); // Close mobile menu on logout
+  };
 
   const desktopNavItems = [
     { name: "Courses", href: "/courses", requiresAuth: false },
-    // Add other static pages if needed, e.g., { name: "About", href: "/about", requiresAuth: false },
-  ]
+    { name: "AI Features", href: "/ai-features", requiresAuth: false },
+    { name: "About", href: "/about", requiresAuth: false },
+    { name: "Pricing", href: "/#pricing", requiresAuth: false },
+    { name: "Features", href: "/#features", requiresAuth: false },
+    { name: "Contact", href: "/contact", requiresAuth: false },
+    { name: "FAQ", href: "/#faq", requiresAuth: false },
+  ];
 
   const mobileNavItems = [
     { name: "Courses", href: "/courses" },
     // Add other static pages for mobile if needed
-  ]
+  ];
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <WidthWrapper className="h-20 flex items-center justify-between">
         {/* Logo */}
         <div className="flex-shrink-0">
-          <Link href="/" className="flex items-center gap-2">
-            <Image
-              src="/images/logo.jpeg"
-              alt="E-Learning Platform Logo"
-              width={40}
-              height={40}
-              className="rounded-lg"
-            />
-            <span className="text-xl font-bold text-gray-900 hidden sm:block">E-Learning</span>
+          <Link href="/" className="flex items-center justify-center gap-x-2">
+            <div className="h-14 w-14">
+              <Image
+                src="/logo.png"
+                alt="E-Learning Platform Logo"
+                width={400}
+                height={400}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <span className="text-xl font-bold text-gray-900 hidden sm:block mt-3">
+              Punarjanma
+            </span>
           </Link>
         </div>
 
@@ -65,11 +74,11 @@ export default function Navigation() {
               {item.name}
             </Link>
           ))}
-          {user && (
+          {/* {user && user?.role === "admin" (
             <Link href="/admin" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
               Admin
             </Link>
-          )}
+          )} */}
         </div>
 
         {/* Desktop Auth Buttons / User Menu */}
@@ -77,11 +86,19 @@ export default function Navigation() {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                <Button
+                  variant="ghost"
+                  className="relative h-9 w-9 rounded-full"
+                >
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src="/placeholder-user.jpg" alt="User Avatar" />
+                    <AvatarImage
+                      src="/placeholder-user.jpg"
+                      alt="User Avatar"
+                    />
                     <AvatarFallback>
-                      {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                      {user.name
+                        ? user.name.charAt(0).toUpperCase()
+                        : user.email.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -89,8 +106,12 @@ export default function Navigation() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.name || "User"}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    <p className="text-sm font-medium leading-none">
+                      {user.name || "User"}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email}
+                    </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -173,7 +194,11 @@ export default function Navigation() {
                       </Button>
                     </div>
                     <div className="pt-2">
-                      <Button asChild variant="outline" className="w-full bg-transparent">
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="w-full bg-transparent"
+                      >
                         <Link href="/register" onClick={() => setIsOpen(false)}>
                           Register
                         </Link>
@@ -187,5 +212,5 @@ export default function Navigation() {
         </div>
       </WidthWrapper>
     </nav>
-  )
+  );
 }
