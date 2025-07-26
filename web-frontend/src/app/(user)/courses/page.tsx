@@ -182,144 +182,119 @@ export default function CoursesPage() {
           </div>
         ) : (
           <>
-            {/* <div className="mb-6 text-center">
-              <p className="text-gray-600">
-                <span className="font-semibold text-blue-600">
-                  {courses.length}
-                </span>{" "}
-                course
-                {courses.length !== 1 ? "s" : ""} available
-              </p>
-            </div> */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {courses.map((course) => (
                 <Card
                   key={course._id}
-                  className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  className="hover:shadow-md transition-shadow duration-200 border border-gray-200"
                 >
-                  <CardHeader>
-                    <div className="flex items-start justify-between mb-2">
+                  <CardHeader className="pb-1">
+                    <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <BookOpen className="h-5 w-5 text-blue-600" />
-                        <Badge
-                          variant="outline"
-                          className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full"
-                        >
+                        <BookOpen className="h-4 w-4 text-gray-600" />
+                        <span className="text-sm text-gray-600">
                           {course.topics?.length || 0} Topics
-                        </Badge>
+                        </span>
                         {course.tier === "premium" && (
-                          <Crown className="h-4 w-4 text-yellow-500" />
+                          <Crown className="h-4 w-4 text-amber-500" />
                         )}
                       </div>
                       <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                        <span className="text-sm font-medium">
+                        <Star className="h-4 w-4 text-amber-400 fill-current" />
+                        <span className="text-sm text-gray-700">
                           {getCourseRating(course)}
                         </span>
                       </div>
                     </div>
-                    <CardTitle className="text-lg leading-tight">
+
+                    <CardTitle className="text-lg font-semibold text-gray-900 leading-tight mb-2">
                       {course.title}
                     </CardTitle>
-                    <CardDescription className="line-clamp-3 text-sm">
+
+                    <CardDescription className="text-gray-600 text-sm line-clamp-2">
                       {course.description}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3 mb-6">
-                      <div className="flex items-center justify-between text-sm text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4" />
-                          <span>{getTotalLessons(course)} lessons</span>
+
+                  <CardContent className="pt-0 flex flex-col h-full">
+                    <div className="flex flex-col justify-between flex-grow space-y-2">
+                      {/* Course Stats */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between text-sm text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            <span>{getTotalLessons(course)} lessons</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            <span>{getCourseDuration(course)}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          <span>{getCourseDuration(course)}</span>
+
+                        {/* Level and Category */}
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex flex-wrap gap-1">
+                            <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded">
+                              {course.level}
+                            </span>
+                            <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded">
+                              {course.category}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      {/* Course Level and Category */}
-                      <div className="flex items-center justify-between text-sm">
-                        <Badge
-                          variant="outline"
-                          className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium"
-                        >
-                          {course.level}
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-medium"
-                        >
-                          {course.category}
-                        </Badge>
-                      </div>
-                      {/* Premium Content Info */}
-                      {getPremiumLessonsCount(course) > 0 && (
-                        <div className="flex items-center gap-1 text-xs text-yellow-600 bg-yellow-50 px-2 py-1 rounded">
+                      {getPremiumLessonsCount(course) > 0 ? (
+                        <div className="flex items-center gap-1 text-xs text-amber-700 bg-amber-50 px-2 py-1 rounded">
                           <Crown className="h-3 w-3" />
                           <span>
                             {getPremiumLessonsCount(course)} premium lessons
                           </span>
                         </div>
+                      ) : (
+                        <div className="flex items-center gap-1 text-xs text-green-700 bg-green-50  px-2 py-1 rounded">
+                          <Crown className="h-3 w-3" />
+                          <span>Free Course</span>
+                        </div>
                       )}
-                      {/* Course Topics Preview */}
-                      {course.topics && course.topics.length > 0 && (
-                        <div className="space-y-1">
-                          <p className="text-xs font-medium text-gray-700">
-                            Course Topics:
-                          </p>
-                          <div className="flex flex-wrap gap-1">
-                            {course.topics.slice(0, 3).map((topic) => (
-                              <span
-                                key={topic._id}
-                                className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded"
-                              >
-                                {topic.title}
+
+                      {/* Spacer to push price + button to bottom */}
+                      <div className="flex-grow" />
+
+                      {/* Pricing and Enrollments */}
+                      <div>
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                          <div>
+                            {course.price && course.price > 0 ? (
+                              <span className="font-semibold text-gray-900">
+                                ${course.price}
                               </span>
-                            ))}
-                            {course.topics.length > 3 && (
-                              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                +{course.topics.length - 3} more
+                            ) : (
+                              <span className="font-semibold text-green-600">
+                                Free
                               </span>
                             )}
                           </div>
-                        </div>
-                      )}
-                      {/* Pricing Info */}
-                      <div className="flex items-center justify-between pt-2 border-t">
-                        <div className="text-sm">
-                          {course.price && course.price > 0 ? (
-                            <span className="font-semibold text-green-600">
-                              ${course.price}
-                            </span>
-                          ) : (
-                            <span className="font-semibold text-green-600">
-                              Free
-                            </span>
-                          )}
-                          {course.premiumPrice &&
-                            course.premiumPrice > 0 &&
-                            course.tier !== "premium" && (
-                              <span className="text-xs text-gray-500 ml-1">
-                                (Premium: NPR {course.premiumPrice})
+                          {course.enrollmentCount &&
+                            course.enrollmentCount > 0 && (
+                              <span className="text-xs text-gray-500">
+                                {course.enrollmentCount} enrolled
                               </span>
                             )}
                         </div>
-                        {course.enrollmentCount &&
-                          course.enrollmentCount > 0 && (
-                            <span className="text-xs text-gray-500">
-                              {course.enrollmentCount} enrolled
-                            </span>
-                          )}
+
+                        <Link
+                          href={`/courses/${course._id}`}
+                          className="block mt-3 cursor-pointer"
+                        >
+                          <Button className="w-full text-white">
+                            {(course.price && course.price > 0) ||
+                            course.tier === "premium"
+                              ? "View Course"
+                              : "Start Learning"}
+                          </Button>
+                        </Link>
                       </div>
                     </div>
-                    <Link href={`/courses/${course._id}`}>
-                      <Button className="w-full">
-                        {(course.price && course.price > 0) ||
-                        course.tier === "premium"
-                          ? "View Course"
-                          : "Start Learning"}
-                      </Button>
-                    </Link>
                   </CardContent>
                 </Card>
               ))}

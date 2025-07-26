@@ -47,9 +47,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen py-10 px-4 flex items-center justify-center w-full">
+    <div className="min-h-[80vh] py-10 px-4 flex items-center justify-center w-full">
       <WidthWrapper>
-        <Card className="mx-auto w-full max-w-md shadow-none border p-6">
+        <Card className="mx-auto w-full max-w-md shadow-none border-none p-6">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-center">
               Welcome, Back
@@ -59,13 +59,17 @@ export default function LoginPage() {
             </p>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form
+              onSubmit={handleSubmit}
+              className="w-[400px] space-y-4 h-full  rounded  bg-white primary "
+            >
               <div className="space-y-1">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
+                  placeholder="email@gmail.com"
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
@@ -76,6 +80,7 @@ export default function LoginPage() {
                   id="password"
                   type="password"
                   value={password}
+                  placeholder="Your password"
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />

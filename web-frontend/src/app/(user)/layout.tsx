@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import "@/app/globals.css";
 
 import Layout from "@/components/layouts/Layout";
+import ChatBotButton from "@/components/ChatBotButton";
 // import ReactQueryProvider from "@/providers/ReactQueryProvider";
 
 const geistSans = Geist({
@@ -28,9 +29,10 @@ export default function UserLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en"  className="hydrated">
+    <html lang="en" className="hydrated">
       <body className={`${poppins.variable} ${geistSans.variable}`}>
         <Layout>{children}</Layout>
+        <ChatBotButton />
       </body>
     </html>
   );

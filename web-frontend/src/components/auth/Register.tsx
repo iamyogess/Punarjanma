@@ -43,6 +43,7 @@ export default function RegisterPage() {
           <Input
             id="fullName"
             name="fullName"
+            placeholder="Your fullname"
             onChange={handleChange}
             value={formData.fullName}
           />
@@ -54,6 +55,7 @@ export default function RegisterPage() {
             id="email"
             name="email"
             type="email"
+            placeholder="email@gmail.com"
             onChange={handleChange}
             value={formData.email}
           />
@@ -65,6 +67,7 @@ export default function RegisterPage() {
             id="password"
             name="password"
             type="password"
+            placeholder="Your password"
             onChange={handleChange}
             value={formData.password}
           />

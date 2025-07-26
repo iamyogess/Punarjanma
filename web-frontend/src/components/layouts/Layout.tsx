@@ -8,7 +8,7 @@ export default function Layout({ children }: Props) {
   return (
     <>
       <Navigation />
-      <div className="min-h-[80dvh]">{children}</div>
+      <main className="min-h-screen">{children}</main>
       <Footer />
     </>
   );

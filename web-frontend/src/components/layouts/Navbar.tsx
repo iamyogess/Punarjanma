@@ -29,12 +29,22 @@ export default function Navigation() {
 
   const desktopNavItems = [
     { name: "Courses", href: "/courses", requiresAuth: false },
-    // Add other static pages if needed, e.g., { name: "About", href: "/about", requiresAuth: false },
+    { name: "AI Features", href: "/ai-features", requiresAuth: false },
+    { name: "About", href: "/about", requiresAuth: false },
+    { name: "Pricing", href: "/#pricing", requiresAuth: false },
+    { name: "Features", href: "/#features", requiresAuth: false },
+    { name: "Contact", href: "/contact", requiresAuth: false },
+    { name: "FAQ", href: "/#faq", requiresAuth: false },
   ];
 
   const mobileNavItems = [
     { name: "Courses", href: "/courses" },
-    // Add other static pages for mobile if needed
+    { name: "AI Features", href: "/ai-features" },
+    { name: "About", href: "/about" },
+    { name: "Pricing", href: "/#pricing" },
+    { name: "Features", href: "/#features" },
+    { name: "Contact", href: "/contact" },
+    { name: "FAQ", href: "/#faq" },
   ];
 
   return (
@@ -42,16 +52,18 @@ export default function Navigation() {
       <WidthWrapper className="h-20 flex items-center justify-between">
         {/* Logo */}
         <div className="flex-shrink-0">
-          <Link href="/" className="flex items-center gap-2">
-            <Image
-              src="/images/logo.jpeg"
-              alt="E-Learning Platform Logo"
-              width={40}
-              height={40}
-              className="rounded-lg"
-            />
-            <span className="text-xl font-bold text-gray-900 hidden sm:block">
-              E-Learning
+          <Link href="/" className="flex items-center justify-center gap-x-2">
+            <div className="h-14 w-14">
+              <Image
+                src="/logo.png"
+                alt="E-Learning Platform Logo"
+                width={400}
+                height={400}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <span className="text-xl font-bold text-gray-900 hidden sm:block mt-3">
+              Punarjanma
             </span>
           </Link>
         </div>
@@ -67,14 +79,11 @@ export default function Navigation() {
               {item.name}
             </Link>
           ))}
-          {user && (
-            <Link
-              href="/admin"
-              className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
-            >
+          {/* {user && user?.role === "admin" (
+            <Link href="/admin" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
               Admin
             </Link>
-          )}
+          )} */}
         </div>
 
         {/* Desktop Auth Buttons / User Menu */}
