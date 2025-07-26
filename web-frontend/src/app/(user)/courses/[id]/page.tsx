@@ -23,7 +23,6 @@ import {
   Lock,
   Crown,
   BotMessageSquare,
-  MessagesSquare,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
@@ -350,40 +349,6 @@ export default function CourseDetailPage() {
           </div>
         </div>
 
-        {/* Enrollment and Premium Upgrade */}
-        {user && (
-          <div className="mb-8 space-y-4">
-            {!userIsEnrolled && (
-              <Alert>
-                <BookOpen className="h-4 w-4" />
-                <AlertDescription>
-                  <div className="flex items-center justify-between">
-                    <span>
-                      Enroll in this course to track your progress and access
-                      content.
-                    </span>
-                    <Button
-                      onClick={enrollInCourse}
-                      disabled={enrolling}
-                      size="sm"
-                    >
-                      {enrolling ? "Enrolling..." : "Enroll Now"}
-                    </Button>
-                  </div>
-                </AlertDescription>
-              </Alert>
-            )}
-            {/* Premium Upgrade Section */}
-            <PremiumUpgradeSection
-              course={course}
-              premiumLessonsCount={premiumLessons}
-              userIsEnrolled={userIsEnrolled}
-              userHasPremium={userHasPremium}
-              onPaymentInitiated={handlePaymentInitiated}
-            />
-          </div>
-        )}
-
         {/* Progress Bar */}
         {userIsEnrolled && userProgress && (
           <Card className="mb-8">
@@ -565,6 +530,41 @@ export default function CourseDetailPage() {
             />
           </div>
         </div>
+
+           {/* Enrollment and Premium Upgrade */}
+        {user && (
+          <div className="my-8 space-y-4">
+            {!userIsEnrolled && (
+              <Alert>
+                <BookOpen className="h-4 w-4" />
+                <AlertDescription>
+                  <div className="flex items-center justify-between">
+                    <span>
+                      Enroll in this course to track your progress and access
+                      content.
+                    </span>
+                    <Button
+                      onClick={enrollInCourse}
+                      disabled={enrolling}
+                      size="sm"
+                    >
+                      {enrolling ? "Enrolling..." : "Enroll Now"}
+                    </Button>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Premium Upgrade Section */}
+            <PremiumUpgradeSection
+              course={course}
+              premiumLessonsCount={premiumLessons}
+              userIsEnrolled={userIsEnrolled}
+              userHasPremium={userHasPremium}
+              onPaymentInitiated={handlePaymentInitiated}
+            />
+          </div>
+        )}
 
         {/* Chat Modals */}
         <ChatModal

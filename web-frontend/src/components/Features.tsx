@@ -7,6 +7,7 @@ import {
   FileText,
   DollarSign,
   Sparkles,
+  Newspaper,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -24,10 +25,10 @@ const services = [
       "24/7 intelligent chatbot to clarify doubts, explain concepts, and provide guidance instantly.",
   },
   {
-    icon: <Video className="w-10 h-10" />,
-    title: "Video Translation",
+    icon: <Newspaper className="w-10 h-10" />,
+    title: "Text Translation",
     description:
-      "Multilingual video content with real-time translation to make learning accessible to everyone.",
+      "Multilingual texts content with real-time translation to make learning accessible to everyone.",
   },
   {
     icon: <Sparkles className="w-10 h-10" />,

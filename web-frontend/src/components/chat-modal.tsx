@@ -337,12 +337,6 @@ How can I support your learning today?`,
               )}
             </Button>
           </div>
-          {chatType === "ai" && (
-            <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-              <Sparkles className="h-3 w-3" />
-              Powered by Google Gemini AI
-            </p>
-          )}
         </div>
       </DialogContent>
     </Dialog>

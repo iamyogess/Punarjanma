@@ -1,409 +1,488 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { FileText, Languages, Loader2, Download, Copy, CheckCircle, AlertCircle, Info } from "lucide-react"
+import {
+  FileText,
+  Languages,
+  MessageSquare,
+  Download,
+  Loader2,
+  Play,
+  Pause,
+  Volume2,
+  RotateCcw,
+  Settings,
+  Headphones,
+} from "lucide-react"
+import { Slider } from "@/components/ui/slider"
 
 interface VideoFeaturesProps {
   videoUrl: string
   videoTitle: string
-  subjectContext?: string // Add context about the course subject
+  subjectContext: string
 }
 
-interface TranscriptData {
-  videoId: string
-  transcript: string
-  wordCount: number
-  isGenerated?: boolean
-  message?: string
-}
-
-interface SummaryData {
-  summary: string
-  language: string
-  originalLength: number
-  summaryLength: number
-}
-
-interface TranslationData {
-  originalText: string
-  translatedText: string
-  fromLanguage: string
-  toLanguage: string
+interface TTSSettings {
+  voice: string
+  rate: number
+  pitch: number
+  volume: number
 }
 
 export default function VideoFeatures({ videoUrl, videoTitle, subjectContext }: VideoFeaturesProps) {
-  const [transcript, setTranscript] = useState<TranscriptData | null>(null)
-  const [summary, setSummary] = useState<SummaryData | null>(null)
-  const [translation, setTranslation] = useState<TranslationData | null>(null)
+  const [activeTab, setActiveTab] = useState("summary")
+  const [summary, setSummary] = useState("")
+  const [translation, setTranslation] = useState("")
+  const [qna, setQna] = useState("")
+  const [targetLanguage, setTargetLanguage] = useState("ne")
+  const [loading, setLoading] = useState({ summary: false, translation: false, qna: false })
 
-  const [loadingTranscript, setLoadingTranscript] = useState(false)
-  const [loadingSummary, setLoadingSummary] = useState(false)
-  const [loadingTranslation, setLoadingTranslation] = useState(false)
+  // Text-to-Speech states
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
+  const [currentText, setCurrentText] = useState("")
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([])
+  const [ttsSettings, setTtsSettings] = useState<TTSSettings>({
+    voice: "",
+    rate: 1,
+    pitch: 1,
+    volume: 0.8,
+  })
+  const [showTTSSettings, setShowTTSSettings] = useState(false)
 
-  const [error, setError] = useState<string | null>(null)
-  const [copied, setCopied] = useState<string | null>(null)
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
 
-  const fetchTranscript = async () => {
-    setLoadingTranscript(true)
-    setError(null)
-
-    try {
-      const response = await fetch("/api/video/transcript", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          videoUrl,
-          videoTitle,
-          subjectContext,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        setTranscript(data.data)
-      } else {
-        setError(data.error || "Failed to generate transcript")
+  // Load available voices
+  useEffect(() => {
+    const loadVoices = () => {
+      const voices = speechSynthesis.getVoices()
+      setAvailableVoices(voices)
+      if (voices.length > 0 && !ttsSettings.voice) {
+        const englishVoice = voices.find((voice) => voice.lang.startsWith("en"))
+        setTtsSettings((prev) => ({
+          ...prev,
+          voice: englishVoice?.name || voices[0].name,
+        }))
       }
-    } catch (err) {
-      console.error("Network error:", err)
-      setError("Network error occurred. Please check your connection and try again.")
-    } finally {
-      setLoadingTranscript(false)
+    }
+
+    loadVoices()
+    speechSynthesis.addEventListener("voiceschanged", loadVoices)
+
+    return () => {
+      speechSynthesis.removeEventListener("voiceschanged", loadVoices)
+      if (utteranceRef.current) {
+        speechSynthesis.cancel()
+      }
+    }
+  }, [])
+
+  const playTextToSpeech = (text: string) => {
+    if (!text.trim()) return
+
+    speechSynthesis.cancel()
+
+    const utterance = new SpeechSynthesisUtterance(text)
+    const selectedVoice = availableVoices.find((voice) => voice.name === ttsSettings.voice)
+
+    if (selectedVoice) {
+      utterance.voice = selectedVoice
+    }
+
+    utterance.rate = ttsSettings.rate
+    utterance.pitch = ttsSettings.pitch
+    utterance.volume = ttsSettings.volume
+
+    utterance.onstart = () => {
+      setIsPlaying(true)
+      setIsPaused(false)
+      setCurrentText(text)
+    }
+
+    utterance.onend = () => {
+      setIsPlaying(false)
+      setIsPaused(false)
+      setCurrentText("")
+    }
+
+    utterance.onerror = () => {
+      setIsPlaying(false)
+      setIsPaused(false)
+      setCurrentText("")
+    }
+
+    utteranceRef.current = utterance
+    speechSynthesis.speak(utterance)
+  }
+
+  const pauseTextToSpeech = () => {
+    if (speechSynthesis.speaking && !speechSynthesis.paused) {
+      speechSynthesis.pause()
+      setIsPaused(true)
     }
   }
 
-  const generateSummary = async (language: "english" | "nepali" = "english") => {
-    if (!transcript) {
-      setError("Please fetch transcript first")
-      return
+  const resumeTextToSpeech = () => {
+    if (speechSynthesis.paused) {
+      speechSynthesis.resume()
+      setIsPaused(false)
     }
+  }
 
-    setLoadingSummary(true)
-    setError(null)
+  const stopTextToSpeech = () => {
+    speechSynthesis.cancel()
+    setIsPlaying(false)
+    setIsPaused(false)
+    setCurrentText("")
+  }
 
+  const TTSControls = ({ text, label }: { text: string; label: string }) => (
+    <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+      <Headphones className="h-4 w-4 text-blue-600" />
+      <span className="text-sm font-medium text-gray-700">{label}</span>
+      <div className="flex items-center gap-1 ml-auto">
+        {!isPlaying || currentText !== text ? (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => playTextToSpeech(text)}
+            disabled={!text.trim()}
+            className="h-8 px-3 bg-white hover:bg-blue-50"
+          >
+            <Play className="h-3 w-3 mr-1" />
+            Play
+          </Button>
+        ) : (
+          <div className="flex items-center gap-1">
+            {isPaused ? (
+              <Button size="sm" variant="outline" onClick={resumeTextToSpeech} className="h-8 px-3 bg-white">
+                <Play className="h-3 w-3 mr-1" />
+                Resume
+              </Button>
+            ) : (
+              <Button size="sm" variant="outline" onClick={pauseTextToSpeech} className="h-8 px-3 bg-white">
+                <Pause className="h-3 w-3 mr-1" />
+                Pause
+              </Button>
+            )}
+            <Button size="sm" variant="outline" onClick={stopTextToSpeech} className="h-8 px-2 bg-white">
+              <RotateCcw className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
+        <Button size="sm" variant="ghost" onClick={() => setShowTTSSettings(!showTTSSettings)} className="h-8 px-2">
+          <Settings className="h-3 w-3" />
+        </Button>
+      </div>
+    </div>
+  )
+
+  const TTSSettingsPanel = () => (
+    <Card className="mt-4 border-blue-200">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <Volume2 className="h-4 w-4 text-blue-600" />
+          Voice Settings
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <label className="text-xs font-medium text-gray-700 mb-2 block">Voice</label>
+          <Select
+            value={ttsSettings.voice}
+            onValueChange={(value) => setTtsSettings((prev) => ({ ...prev, voice: value }))}
+          >
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableVoices.map((voice) => (
+                <SelectItem key={voice.name} value={voice.name} className="text-xs">
+                  {voice.name} ({voice.lang})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <label className="text-xs font-medium text-gray-700 mb-2 block">Speed: {ttsSettings.rate.toFixed(1)}x</label>
+          <Slider
+            value={[ttsSettings.rate]}
+            onValueChange={([value]) => setTtsSettings((prev) => ({ ...prev, rate: value }))}
+            min={0.5}
+            max={2}
+            step={0.1}
+            className="w-full"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-medium text-gray-700 mb-2 block">Pitch: {ttsSettings.pitch.toFixed(1)}</label>
+          <Slider
+            value={[ttsSettings.pitch]}
+            onValueChange={([value]) => setTtsSettings((prev) => ({ ...prev, pitch: value }))}
+            min={0.5}
+            max={2}
+            step={0.1}
+            className="w-full"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-medium text-gray-700 mb-2 block">
+            Volume: {Math.round(ttsSettings.volume * 100)}%
+          </label>
+          <Slider
+            value={[ttsSettings.volume]}
+            onValueChange={([value]) => setTtsSettings((prev) => ({ ...prev, volume: value }))}
+            min={0}
+            max={1}
+            step={0.1}
+            className="w-full"
+          />
+        </div>
+      </CardContent>
+    </Card>
+  )
+
+  const generateSummary = async () => {
+    setLoading((prev) => ({ ...prev, summary: true }))
     try {
       const response = await fetch("/api/video/summarize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          transcript: transcript.transcript,
-          language,
+          videoTitle,
+          subjectContext,
         }),
       })
-
       const data = await response.json()
-
       if (data.success) {
-        setSummary(data.data)
+        setSummary(data.summary)
       } else {
-        setError(data.error || "Failed to generate summary. Please make sure you have set up your GROQ_API_KEY.")
+        setSummary("Failed to generate summary. Please try again.")
       }
-    } catch (err) {
-      console.error("Summary error:", err)
-      setError("Failed to generate summary. Please check your AI service configuration.")
+    } catch (error) {
+      setSummary("Error generating summary. Please check your connection.")
     } finally {
-      setLoadingSummary(false)
+      setLoading((prev) => ({ ...prev, summary: false }))
     }
   }
 
-  const translateText = async (text: string, fromLang: string, toLang: string) => {
-    setLoadingTranslation(true)
-    setError(null)
-
+  const generateTranslation = async () => {
+    if (!summary) {
+      alert("Please generate a summary first!")
+      return
+    }
+    setLoading((prev) => ({ ...prev, translation: true }))
     try {
       const response = await fetch("/api/video/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          text,
-          fromLanguage: fromLang,
-          toLanguage: toLang,
+          text: summary,
+          targetLanguage,
+          context: `${subjectContext} - ${videoTitle}`,
         }),
       })
-
       const data = await response.json()
-
       if (data.success) {
-        setTranslation(data.data)
+        setTranslation(data.translation)
       } else {
-        setError(data.error || "Translation failed. The translation service may be temporarily unavailable.")
+        setTranslation("Failed to generate translation. Please try again.")
       }
-    } catch (err) {
-      console.error("Translation error:", err)
-      setError("Translation service error. Please try again later.")
+    } catch (error) {
+      setTranslation("Error generating translation. Please check your connection.")
     } finally {
-      setLoadingTranslation(false)
+      setLoading((prev) => ({ ...prev, translation: false }))
     }
   }
 
-  const copyToClipboard = async (text: string, type: string) => {
+  const generateQnA = async () => {
+    if (!summary) {
+      alert("Please generate a summary first!")
+      return
+    }
+    setLoading((prev) => ({ ...prev, qna: true }))
     try {
-      await navigator.clipboard.writeText(text)
-      setCopied(type)
-      setTimeout(() => setCopied(null), 2000)
-    } catch (err) {
-      console.error("Failed to copy text:", err)
-      setError("Failed to copy to clipboard")
+      const response = await fetch("/api/video/qna", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          summary,
+          videoTitle,
+          subjectContext,
+        }),
+      })
+      const data = await response.json()
+      if (data.success) {
+        setQna(data.qna)
+      } else {
+        setQna("Failed to generate Q&A. Please try again.")
+      }
+    } catch (error) {
+      setQna("Error generating Q&A. Please check your connection.")
+    } finally {
+      setLoading((prev) => ({ ...prev, qna: false }))
     }
   }
 
-  const downloadText = (text: string, filename: string) => {
-    try {
-      const blob = new Blob([text], { type: "text/plain" })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = filename
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-    } catch (err) {
-      console.error("Failed to download:", err)
-      setError("Failed to download file")
-    }
+  const downloadContent = (content: string, filename: string) => {
+    const blob = new Blob([content], { type: "text/plain" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `${filename}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5" />
-          Video Analysis & Translation
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {error && (
-          <Alert className="mb-4" variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+    <div className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="summary" className="text-xs">
+            <FileText className="h-3 w-3 mr-1" />
+            Summary
+          </TabsTrigger>
+          <TabsTrigger value="translation" className="text-xs">
+            <Languages className="h-3 w-3 mr-1" />
+            Translation
+          </TabsTrigger>
+          <TabsTrigger value="qna" className="text-xs">
+            <MessageSquare className="h-3 w-3 mr-1" />
+            Q&A
+          </TabsTrigger>
+        </TabsList>
 
-        {transcript?.isGenerated && (
-          <Alert className="mb-4">
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              {transcript.message || "Generated contextual transcript based on video content"}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <Tabs defaultValue="transcript" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="transcript">Transcript</TabsTrigger>
-            <TabsTrigger value="summary">Summary</TabsTrigger>
-            {/* <TabsTrigger value="translation">Translation</TabsTrigger> */}
-          </TabsList>
-
-          <TabsContent value="transcript" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Video Transcript</h3>
-              <Button onClick={fetchTranscript} disabled={loadingTranscript} size="sm">
-                {loadingTranscript ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  "Generate Transcript"
-                )}
-              </Button>
-            </div>
-
-            {transcript && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">{transcript.wordCount} words</Badge>
-                  {transcript.isGenerated && <Badge variant="secondary">AI Generated</Badge>}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => copyToClipboard(transcript.transcript, "transcript")}
-                  >
-                    {copied === "transcript" ? (
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                    ) : (
-                      <Copy className="h-4 w-4 mr-1" />
-                    )}
-                    Copy
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => downloadText(transcript.transcript, `${videoTitle}-transcript.txt`)}
-                  >
-                    <Download className="h-4 w-4 mr-1" />
-                    Download
-                  </Button>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg max-h-96 overflow-y-auto">
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{transcript.transcript}</p>
-                </div>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="summary" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Video Summary</h3>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => generateSummary("english")}
-                  disabled={loadingSummary || !transcript}
-                  size="sm"
-                  variant="outline"
-                >
-                  {loadingSummary ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                  English
-                </Button>
-                <Button
-                  onClick={() => generateSummary("nepali")}
-                  disabled={loadingSummary || !transcript}
-                  size="sm"
-                  variant="outline"
-                >
-                  {loadingSummary ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                  नेपाली
-                </Button>
-              </div>
-            </div>
-
-            {!transcript && (
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>Please generate the transcript first to create a summary.</AlertDescription>
-              </Alert>
-            )}
-
+        <TabsContent value="summary" className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Button onClick={generateSummary} disabled={loading.summary} size="sm" className="flex-1">
+              {loading.summary ? (
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              ) : (
+                <FileText className="h-3 w-3 mr-1" />
+              )}
+              Generate Summary
+            </Button>
             {summary && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">{summary.language}</Badge>
-                  <Badge variant="outline">{summary.summaryLength} characters</Badge>
-                  <Button variant="outline" size="sm" onClick={() => copyToClipboard(summary.summary, "summary")}>
-                    {copied === "summary" ? (
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                    ) : (
-                      <Copy className="h-4 w-4 mr-1" />
-                    )}
-                    Copy
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => downloadText(summary.summary, `${videoTitle}-summary-${summary.language}.txt`)}
-                  >
-                    <Download className="h-4 w-4 mr-1" />
-                    Download
-                  </Button>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{summary.summary}</p>
-                </div>
-              </div>
+              <Button variant="outline" size="sm" onClick={() => downloadContent(summary, `${videoTitle}-summary`)}>
+                <Download className="h-3 w-3" />
+              </Button>
             )}
-          </TabsContent>
+          </div>
 
-          {/* <TabsContent value="translation" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Translation</h3>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => summary && translateText(summary.summary, "english", "nepali")}
-                  disabled={loadingTranslation || !summary}
-                  size="sm"
-                  variant="outline"
-                >
-                  {loadingTranslation ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Languages className="h-4 w-4 mr-2" />
-                  )}
-                  EN → NE
-                </Button>
-                <Button
-                  onClick={() => summary && translateText(summary.summary, "nepali", "english")}
-                  disabled={loadingTranslation || !summary}
-                  size="sm"
-                  variant="outline"
-                >
-                  {loadingTranslation ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Languages className="h-4 w-4 mr-2" />
-                  )}
-                  NE → EN
-                </Button>
+          {summary && (
+            <div className="space-y-3">
+              <TTSControls text={summary} label="🎧 Listen to Summary" />
+              {showTTSSettings && <TTSSettingsPanel />}
+              <div className="bg-gray-50 p-4 rounded-lg text-sm leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto border">
+                {summary}
               </div>
             </div>
+          )}
+        </TabsContent>
 
-            {!summary && (
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>Please generate a summary first to enable translation.</AlertDescription>
-              </Alert>
-            )}
-
+        <TabsContent value="translation" className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Select value={targetLanguage} onValueChange={setTargetLanguage}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ne">🇳🇵 नेपाली</SelectItem>
+                <SelectItem value="hi">🇮🇳 हिंदी</SelectItem>
+                <SelectItem value="es">🇪🇸 Español</SelectItem>
+                <SelectItem value="fr">🇫🇷 Français</SelectItem>
+                <SelectItem value="de">🇩🇪 Deutsch</SelectItem>
+                <SelectItem value="ja">🇯🇵 日本語</SelectItem>
+                <SelectItem value="ko">🇰🇷 한국어</SelectItem>
+                <SelectItem value="zh">🇨🇳 中文</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={generateTranslation}
+              disabled={loading.translation || !summary}
+              size="sm"
+              className="flex-1"
+            >
+              {loading.translation ? (
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              ) : (
+                <Languages className="h-3 w-3 mr-1" />
+              )}
+              Translate Summary
+            </Button>
             {translation && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">
-                    {translation.fromLanguage} → {translation.toLanguage}
-                  </Badge>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => copyToClipboard(translation.translatedText, "translation")}
-                  >
-                    {copied === "translation" ? (
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                    ) : (
-                      <Copy className="h-4 w-4 mr-1" />
-                    )}
-                    Copy
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      downloadText(
-                        translation.translatedText,
-                        `${videoTitle}-translation-${translation.toLanguage}.txt`,
-                      )
-                    }
-                  >
-                    <Download className="h-4 w-4 mr-1" />
-                    Download
-                  </Button>
-                </div>
-
-                <div className="grid gap-4">
-                  <div>
-                    <h4 className="font-medium mb-2">Original ({translation.fromLanguage})</h4>
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{translation.originalText}</p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium mb-2">Translation ({translation.toLanguage})</h4>
-                    <div className="bg-blue-50 p-3 rounded-lg">
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{translation.translatedText}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => downloadContent(translation, `${videoTitle}-translation-${targetLanguage}`)}
+              >
+                <Download className="h-3 w-3" />
+              </Button>
             )}
-          </TabsContent> */}
-        </Tabs>
-      </CardContent>
-    </Card>
+          </div>
+
+          {!summary && (
+            <Alert>
+              <AlertDescription>Generate a summary first to enable translation.</AlertDescription>
+            </Alert>
+          )}
+
+          {translation && (
+            <div className="space-y-3">
+              <TTSControls text={translation} label="🎧 Listen to Translation" />
+              {showTTSSettings && <TTSSettingsPanel />}
+              <div className="bg-gray-50 p-4 rounded-lg text-sm leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto border">
+                {translation}
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="qna" className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Button onClick={generateQnA} disabled={loading.qna || !summary} size="sm" className="flex-1">
+              {loading.qna ? (
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              ) : (
+                <MessageSquare className="h-3 w-3 mr-1" />
+              )}
+              Generate Q&A
+            </Button>
+            {qna && (
+              <Button variant="outline" size="sm" onClick={() => downloadContent(qna, `${videoTitle}-qna`)}>
+                <Download className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+
+          {!summary && (
+            <Alert>
+              <AlertDescription>Generate a summary first to enable Q&A generation.</AlertDescription>
+            </Alert>
+          )}
+
+          {qna && (
+            <div className="space-y-3">
+              <TTSControls text={qna} label="🎧 Listen to Q&A" />
+              {showTTSSettings && <TTSSettingsPanel />}
+              <div className="bg-gray-50 p-4 rounded-lg text-sm leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto border">
+                {qna}
+              </div>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
   )
 }

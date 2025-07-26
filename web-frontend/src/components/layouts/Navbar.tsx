@@ -17,10 +17,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { usePathname } from "next/navigation";
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = React.useState(false);
   const { user, logout } = useAuth();
+  const pathname = usePathname();
 
   const handleLogout = async () => {
     await logout();
@@ -28,18 +30,24 @@ export default function Navigation() {
   };
 
   const desktopNavItems = [
+    { name: "Home", href: "/", requiresAuth: false },
     { name: "Courses", href: "/courses", requiresAuth: false },
-    { name: "AI Features", href: "/ai-features", requiresAuth: false },
+    { name: "About", href: "/about", requiresAuth: false },
+    { name: "Pricing", href: "/#pricing", requiresAuth: false },
+    { name: "Contact", href: "/contact", requiresAuth: false },
+    { name: "Features", href: "/#features", requiresAuth: false },
+    { name: "FAQ", href: "/#faq", requiresAuth: false },
+  ];
+
+  const mobileNavItems = [
+    { name: "Home", href: "/", requiresAuth: false },
+    { name: "Courses", href: "/courses", requiresAuth: false },
+    // { name: "AI Features", href: "/ai-features", requiresAuth: false },
     { name: "About", href: "/about", requiresAuth: false },
     { name: "Pricing", href: "/#pricing", requiresAuth: false },
     { name: "Features", href: "/#features", requiresAuth: false },
     { name: "Contact", href: "/contact", requiresAuth: false },
     { name: "FAQ", href: "/#faq", requiresAuth: false },
-  ];
-
-  const mobileNavItems = [
-    { name: "Courses", href: "/courses" },
-    // Add other static pages for mobile if needed
   ];
 
   return (
@@ -65,20 +73,22 @@ export default function Navigation() {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-6">
-          {desktopNavItems.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
-            >
-              {item.name}
-            </Link>
-          ))}
-          {/* {user && user?.role === "admin" (
-            <Link href="/admin" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
-              Admin
-            </Link>
-          )} */}
+          {desktopNavItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`text-sm transition-colors font-medium ${
+                  isActive
+                    ? "font-semibold"
+                    : "text-gray-600 "
+                }`}
+              >
+                {item.name}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Desktop Auth Buttons / User Menu */}

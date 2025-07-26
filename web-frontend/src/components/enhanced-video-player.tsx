@@ -1,5 +1,4 @@
 "use client"
-
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -15,7 +14,7 @@ interface EnhancedVideoPlayerProps {
   userIsEnrolled: boolean
   isSubTopicCompleted: (id: string) => boolean
   markAsCompleted: (id: string) => void
-  courseTitle?: string // Add course context
+  courseTitle?: string
 }
 
 // Utility function to convert YouTube URL to embeddable format
@@ -71,7 +70,6 @@ export function EnhancedVideoPlayer({
                 AI Features
               </TabsTrigger>
             </TabsList>
-
             <TabsContent value="player" className="space-y-4">
               {/* YouTube Video Player */}
               <div className="aspect-video bg-black rounded-lg overflow-hidden">
@@ -97,7 +95,6 @@ export function EnhancedVideoPlayer({
                   </div>
                 )}
               </div>
-
               <div className="space-y-3">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
@@ -141,7 +138,6 @@ export function EnhancedVideoPlayer({
                 </div>
               </div>
             </TabsContent>
-
             <TabsContent value="features" className="space-y-4">
               {selectedSubTopic?.videoUrl ? (
                 <VideoFeatures
