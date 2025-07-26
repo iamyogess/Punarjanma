@@ -10,6 +10,7 @@ import SplashScreen from './src/screens/SplashScreen.jsx'; // ✅ Import SplashS
 import LoginScreen from './src/screens/LoginScreen.jsx';
 import SignupScreen from './src/screens/SignupScreen.jsx';
 import OtpScreen from './src/screens/OtpScreen.jsx';
+import ChatbotScreen from './src/screens/ChatbotScreen.jsx';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +32,7 @@ export default function App() {
         <Stack.Screen name="Courses" component={Courses} />
         <Stack.Screen name="AI" component={AI} />
         <Stack.Screen name="Profile" component={Profile} />
+        <Stack.Screen name="Chatbot" component={ChatbotScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

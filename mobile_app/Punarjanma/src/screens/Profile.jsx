@@ -15,6 +15,7 @@ import {
   DocumentCheckIcon,
   ChevronRightIcon,
 } from 'react-native-heroicons/outline';
+import ChatbotButton from '../components/ChatbotButton';
 
 const Profile = ({ navigation }) => {
   const MenuItem = ({ Icon, label, rightText }) => (
@@ -68,8 +69,8 @@ const Profile = ({ navigation }) => {
           <MenuItem Icon={DocumentCheckIcon} label="Term & Condition" />
         </View>
       </ScrollView>
-
-     
+<ChatbotButton onPress={() => navigation.navigate('Chatbot')} />
+     {/* <ChatbotButton /> */}
       <Footer navigation={navigation} />
     </View>
   );
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.primary,
+    color: 'black',
     marginTop: 8,
   },
   email: {

@@ -3,6 +3,10 @@ import { View, ScrollView, Text, StyleSheet, SafeAreaView, TouchableOpacity } fr
 import Footer from '../components/Footer';
 import ImageCarousel from '../components/ImageCarousel';
 import TopBar from '../components/TopBar';
+import { colors } from '../theme/colors';
+import CoursesAvailableCard from '../components/CoursesAvailableCard';
+import ChatbotButton from '../components/ChatbotButton';
+import ChatbotScreen from './ChatbotScreen';
 
 const HomeScreen = ({ navigation }) => {
  const categories = [
@@ -36,10 +40,12 @@ const HomeScreen = ({ navigation }) => {
             </TouchableOpacity>
           ))}
         </ScrollView>
+        <CoursesAvailableCard />
         
       </ScrollView>
+           {/* <ChatbotButton onPress={ChatbotScreen} /> */}
+     <ChatbotButton onPress={() => navigation.navigate('Chatbot')} />
 
-      {/* ✅ Pass navigation here */}
       <Footer navigation={navigation} />
     </SafeAreaView>
   );
@@ -54,26 +60,26 @@ const styles = StyleSheet.create({
   scrollContent: {
     // marginTop:10,
     // marginHorizontal:20,
-    paddingBottom: 100,
+    paddingBottom: 60,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
   },
   categories: {
-    paddingVertical: 15,
-    gap: 12, // space between buttons (Android support)
+    paddingVertical: 20,
+    gap: 4, 
   },
   categoryButton: {
-    backgroundColor: '#1DA1F2',
+    backgroundColor:'black',
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 20,
-    marginRight: 12,
+    marginRight: 4,
   },
   categoryText: {
     color: 'white',
-    fontWeight: '600',
-    fontSize: 14,
+    fontWeight: '400',
+    fontSize: 12,
   },
 });
