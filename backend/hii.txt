@@ -1,4 +1,0 @@
-mongodb+srv://bikramraidev:<db_password>@cluster0.woddiom.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-
-
-pass=odkzS2lBPKyiph0g
