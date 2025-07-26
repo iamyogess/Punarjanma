@@ -61,7 +61,7 @@ const pricingPlans: PricingPlan[] = [
   },
   {
     id: "ai-assist",
-    name: "AI Assist (Free for Limited Time)",
+    name: "AI Assist",
     description: "Unlock smart learning tools powered by AI",
     price: "Free (Limited Time)",
     buttonText: "Try AI Features",

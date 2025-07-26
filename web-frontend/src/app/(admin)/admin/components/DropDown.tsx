@@ -49,21 +49,6 @@ export default function DropDown() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/courses">
-                <BookOpen className="mr-2 h-4 w-4" />
-                <span>My Courses</span>
-              </Link>
-            </DropdownMenuItem>
-            {user && ( // Assuming admin access for any logged-in user for now
-              <DropdownMenuItem asChild>
-                <Link href="/admin">
-                  <BarChart3 className="mr-2 h-4 w-4" />
-                  <span>Admin Dashboard</span>
-                </Link>
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               <span>Log out</span>
