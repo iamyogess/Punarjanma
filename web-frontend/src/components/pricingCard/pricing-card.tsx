@@ -56,6 +56,22 @@ const pricingPlans: PricingPlan[] = [
       },
     ],
   },
+   {
+    id: "ai-assist",
+    name: "AI Assist",
+    description: "Enhance your learning with smart tools",
+    price: "Free (Limited Time)",
+    buttonText: "Try AI Tools",
+    isPopular: false,
+    features: [
+      { title: "Everything in Starter", description: "Plus advanced AI-powered tools" },
+      { title: "Smart PDF Summarization", description: "Get quick summaries of your documents" },
+      { title: "Ask Questions to Your PDFs", description: "Instant answers from your materials" },
+      { title: "Personalized Learning Assistant", description: "AI that helps you stay on track" },
+      { title: "Context-aware Recommendations", description: "Learn what matters most to you" },
+      { title: "Limited time free access", description: "Premium features available for free now" },
+    ],
+  },
   {
     id: "pro",
     name: "Pro",
@@ -95,8 +111,8 @@ const pricingPlans: PricingPlan[] = [
 
 export default function PricingCards() {
   return (
-    <div className="min-h-screen  p-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen  ">
+      <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Choose Your Learning Path
@@ -106,10 +122,10 @@ export default function PricingCards() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          {pricingPlans.map((plan) => (
+        <div className="grid md:grid-cols-3 gap-8">
+          {pricingPlans?.map((plan) => (
             <Card
-              key={plan.id}
+              key={plan?.id}
               className="bg-white border-gray-200 shadow-lg relative"
             >
               {plan.isPopular && (
@@ -132,7 +148,7 @@ export default function PricingCards() {
 
               <CardContent className="space-y-6">
                 <div className="text-gray-900">
-                  <span className="text-4xl font-bold">{plan.price}</span>
+                  <span className="text-3xl font-bold">{plan.price}</span>
                   {plan.priceDescription && (
                     <span className="text-gray-600 text-lg">
                       {plan.priceDescription}

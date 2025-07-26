@@ -6,18 +6,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckCircle, Loader2, XCircle, ArrowLeft } from "lucide-react"
-import { EsewaPayment } from "@/lib/esewa"
 import { useAuth } from "@/contexts/auth-context"
+
+interface PaymentData {
+  transaction_code: string
+  status: string
+  total_amount: string
+  transaction_uuid: string
+  product_code: string
+  signed_field_names: string
+  signature: string
+}
 
 export default function PaymentSuccessPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { refreshUser } = useAuth()
-
   const [verificationState, setVerificationState] = useState<{
     status: "verifying" | "success" | "failed"
     message: string
     courseId?: string
+    paymentData?: PaymentData
   }>({
     status: "verifying",
     message: "Verifying your payment...",
@@ -26,58 +35,105 @@ export default function PaymentSuccessPage() {
   useEffect(() => {
     const verifyPayment = async () => {
       try {
-        // Get parameters from URL
-        const oid = searchParams.get("oid")
-        const amt = searchParams.get("amt")
-        const refId = searchParams.get("refId")
+        // Get the data parameter from URL
+        const dataParam = searchParams.get("data")
+        console.log("Raw data parameter:", dataParam)
 
-        console.log("Payment success parameters:", { oid, amt, refId })
-
-        // Validate required parameters
-        if (!oid || !amt || !refId) {
-          console.error("Missing payment parameters:", { oid, amt, refId })
+        if (!dataParam) {
+          console.error("No data parameter found in URL")
           setVerificationState({
             status: "failed",
-            message: "Invalid payment parameters. Please contact support if money was deducted.",
+            message: "Invalid payment response. Missing data parameter. Please contact support if money was deducted.",
           })
           return
         }
 
-        // Extract course ID from order ID
-        const courseId = oid.split("_")[1]
-
-        if (!courseId) {
-          console.error("Could not extract course ID from:", oid)
+        // Decode the base64 data
+        let paymentData: PaymentData
+        try {
+          const decodedData = atob(dataParam)
+          paymentData = JSON.parse(decodedData)
+          console.log("Decoded payment data:", paymentData)
+        } catch (decodeError) {
+          console.error("Failed to decode payment data:", decodeError)
           setVerificationState({
             status: "failed",
-            message: "Invalid order format. Please contact support.",
+            message: "Invalid payment data format. Please contact support.",
           })
           return
         }
+
+        // Validate payment data structure
+        if (!paymentData.transaction_uuid || !paymentData.total_amount || !paymentData.transaction_code) {
+          console.error("Missing required payment data fields:", paymentData)
+          setVerificationState({
+            status: "failed",
+            message: "Incomplete payment data received. Please contact support if money was deducted.",
+          })
+          return
+        }
+
+        // Check if payment was successful from eSewa's perspective
+        if (paymentData.status !== "COMPLETE") {
+          console.error("Payment not completed by eSewa:", paymentData.status)
+          setVerificationState({
+            status: "failed",
+            message: `Payment status from eSewa: ${paymentData.status}. Please contact support if money was deducted.`,
+          })
+          return
+        }
+
+        // Extract course ID from transaction UUID
+        const transactionParts = paymentData.transaction_uuid.split("_")
+        if (transactionParts.length < 3 || transactionParts[0] !== "course") {
+          console.error("Invalid transaction UUID format:", paymentData.transaction_uuid)
+          setVerificationState({
+            status: "failed",
+            message: "Invalid transaction format. Could not extract course ID. Please contact support.",
+          })
+          return
+        }
+
+        const courseId = transactionParts[1]
+        console.log("Extracted course ID:", courseId)
 
         // Verify payment with backend
-        const isVerified = await EsewaPayment.verifyPayment(oid, amt, refId)
+        console.log("Sending payment data to backend for verification...")
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/verify-esewa-v2`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            paymentData,
+            courseId,
+          }),
+        })
 
-        if (isVerified) {
+        const result = await response.json()
+        console.log("Backend verification result:", result)
+
+        if (result.success) {
           setVerificationState({
             status: "success",
             message: "Payment verified successfully! You now have premium access.",
             courseId,
+            paymentData,
           })
-
           // Refresh user data to update premium status
           await refreshUser()
         } else {
           setVerificationState({
             status: "failed",
-            message: "Payment verification failed. Please contact support if money was deducted.",
+            message: result.message || "Payment verification failed. Please contact support if money was deducted.",
           })
         }
       } catch (error) {
-        console.error("Payment verification error:", error)
+        console.error("An unexpected error occurred during payment verification:", error)
         setVerificationState({
           status: "failed",
-          message: "An error occurred during verification. Please contact support if money was deducted.",
+          message: `An unexpected error occurred during verification: ${error instanceof Error ? error.message : String(error)}. Please contact support if money was deducted.`,
         })
       }
     }
@@ -117,14 +173,12 @@ export default function PaymentSuccessPage() {
                 </div>
               )}
             </div>
-
             <CardTitle className="text-2xl">
               {verificationState.status === "verifying" && "Verifying Payment"}
               {verificationState.status === "success" && "Payment Successful!"}
               {verificationState.status === "failed" && "Payment Verification Failed"}
             </CardTitle>
           </CardHeader>
-
           <CardContent className="space-y-6">
             <Alert
               className={
@@ -152,6 +206,25 @@ export default function PaymentSuccessPage() {
                   <p className="mt-2">You now have premium access to the course content.</p>
                 </div>
 
+                {/* Payment Details */}
+                {verificationState.paymentData && (
+                  <div className="bg-gray-50 rounded-lg p-4 text-sm">
+                    <h4 className="font-medium text-gray-900 mb-2">Payment Details:</h4>
+                    <div className="space-y-1 text-gray-600">
+                      <p>
+                        <span className="font-medium">Transaction ID:</span>{" "}
+                        {verificationState.paymentData.transaction_code}
+                      </p>
+                      <p>
+                        <span className="font-medium">Amount:</span> NPR {verificationState.paymentData.total_amount}
+                      </p>
+                      <p>
+                        <span className="font-medium">Status:</span> {verificationState.paymentData.status}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex gap-4 justify-center">
                   <Button onClick={handleGoToCourse} className="flex-1 max-w-xs">
                     Go to Course
@@ -169,7 +242,6 @@ export default function PaymentSuccessPage() {
                   <p>⚠️ We couldn&apos;t verify your payment at this time.</p>
                   <p className="mt-2">If money was deducted from your account, please contact our support team.</p>
                 </div>
-
                 <div className="flex gap-4 justify-center">
                   <Button variant="outline" onClick={handleGoToCourses}>
                     <ArrowLeft className="h-4 w-4 mr-2" />
